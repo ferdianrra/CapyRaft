@@ -1,0 +1,567 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		D66FD1653060435000D25370 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D66FD1433060434F00D25370 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D66FD14A3060434F00D25370;
+			remoteInfo = capfight;
+		};
+		D66FD16F3060435000D25370 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D66FD1433060434F00D25370 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D66FD14A3060434F00D25370;
+			remoteInfo = capfight;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D66FD14B3060435000D25370 /* capfight.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = capfight.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D66FD1643060435000D25370 /* capfightTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = capfightTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D66FD16E3060435000D25370 /* capfightUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = capfightUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D66FD1743060435000D25370 /* Exceptions for "capfight" folder in "capfight" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D66FD14A3060434F00D25370 /* capfight */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D66FD14D3060435000D25370 /* capfight */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D66FD1743060435000D25370 /* Exceptions for "capfight" folder in "capfight" target */,
+			);
+			path = capfight;
+			sourceTree = "<group>";
+		};
+		D66FD1673060435000D25370 /* capfightTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = capfightTests;
+			sourceTree = "<group>";
+		};
+		D66FD1713060435000D25370 /* capfightUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = capfightUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D66FD1483060434F00D25370 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		D66FD1613060435000D25370 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		D66FD16B3060435000D25370 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D66FD1423060434F00D25370 = {
+			isa = PBXGroup;
+			children = (
+				D66FD14D3060435000D25370 /* capfight */,
+				D66FD1673060435000D25370 /* capfightTests */,
+				D66FD1713060435000D25370 /* capfightUITests */,
+				D66FD14C3060435000D25370 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D66FD14C3060435000D25370 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D66FD14B3060435000D25370 /* capfight.app */,
+				D66FD1643060435000D25370 /* capfightTests.xctest */,
+				D66FD16E3060435000D25370 /* capfightUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D66FD14A3060434F00D25370 /* capfight */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D66FD1753060435000D25370 /* Build configuration list for PBXNativeTarget "capfight" */;
+			buildPhases = (
+				D66FD1473060434F00D25370 /* Sources */,
+				D66FD1483060434F00D25370 /* Frameworks */,
+				D66FD1493060434F00D25370 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				D66FD14D3060435000D25370 /* capfight */,
+			);
+			name = capfight;
+			productName = capfight;
+			productReference = D66FD14B3060435000D25370 /* capfight.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D66FD1633060435000D25370 /* capfightTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D66FD17A3060435000D25370 /* Build configuration list for PBXNativeTarget "capfightTests" */;
+			buildPhases = (
+				D66FD1603060435000D25370 /* Sources */,
+				D66FD1613060435000D25370 /* Frameworks */,
+				D66FD1623060435000D25370 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D66FD1663060435000D25370 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D66FD1673060435000D25370 /* capfightTests */,
+			);
+			name = capfightTests;
+			productName = capfightTests;
+			productReference = D66FD1643060435000D25370 /* capfightTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		D66FD16D3060435000D25370 /* capfightUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D66FD17D3060435000D25370 /* Build configuration list for PBXNativeTarget "capfightUITests" */;
+			buildPhases = (
+				D66FD16A3060435000D25370 /* Sources */,
+				D66FD16B3060435000D25370 /* Frameworks */,
+				D66FD16C3060435000D25370 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D66FD1703060435000D25370 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				D66FD1713060435000D25370 /* capfightUITests */,
+			);
+			name = capfightUITests;
+			productName = capfightUITests;
+			productReference = D66FD16E3060435000D25370 /* capfightUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D66FD1433060434F00D25370 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					D66FD14A3060434F00D25370 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					D66FD1633060435000D25370 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = D66FD14A3060434F00D25370;
+					};
+					D66FD16D3060435000D25370 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = D66FD14A3060434F00D25370;
+					};
+				};
+			};
+			buildConfigurationList = D66FD1463060434F00D25370 /* Build configuration list for PBXProject "capfight" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D66FD1423060434F00D25370;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = D66FD14C3060435000D25370 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D66FD14A3060434F00D25370 /* capfight */,
+				D66FD1633060435000D25370 /* capfightTests */,
+				D66FD16D3060435000D25370 /* capfightUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D66FD1493060434F00D25370 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		D66FD1623060435000D25370 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		D66FD16C3060435000D25370 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D66FD1473060434F00D25370 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		D66FD1603060435000D25370 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		D66FD16A3060435000D25370 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D66FD1663060435000D25370 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D66FD14A3060434F00D25370 /* capfight */;
+			targetProxy = D66FD1653060435000D25370 /* PBXContainerItemProxy */;
+		};
+		D66FD1703060435000D25370 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D66FD14A3060434F00D25370 /* capfight */;
+			targetProxy = D66FD16F3060435000D25370 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D66FD1763060435000D25370 /* Debug configuration for PBXNativeTarget "capfight" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = capfight/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfight;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D66FD1773060435000D25370 /* Release configuration for PBXNativeTarget "capfight" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = capfight/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfight;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D66FD1783060435000D25370 /* Debug configuration for PBXProject "capfight" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D66FD1793060435000D25370 /* Release configuration for PBXProject "capfight" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D66FD17B3060435000D25370 /* Debug configuration for PBXNativeTarget "capfightTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfightTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/capfight.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/capfight";
+			};
+			name = Debug;
+		};
+		D66FD17C3060435000D25370 /* Release configuration for PBXNativeTarget "capfightTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfightTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/capfight.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/capfight";
+			};
+			name = Release;
+		};
+		D66FD17E3060435000D25370 /* Debug configuration for PBXNativeTarget "capfightUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfightUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = capfight;
+			};
+			name = Debug;
+		};
+		D66FD17F3060435000D25370 /* Release configuration for PBXNativeTarget "capfightUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SFYM6B225;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.academy.capfightUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = capfight;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D66FD1463060434F00D25370 /* Build configuration list for PBXProject "capfight" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D66FD1783060435000D25370 /* Debug configuration for PBXProject "capfight" */,
+				D66FD1793060435000D25370 /* Release configuration for PBXProject "capfight" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		D66FD1753060435000D25370 /* Build configuration list for PBXNativeTarget "capfight" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D66FD1763060435000D25370 /* Debug configuration for PBXNativeTarget "capfight" */,
+				D66FD1773060435000D25370 /* Release configuration for PBXNativeTarget "capfight" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		D66FD17A3060435000D25370 /* Build configuration list for PBXNativeTarget "capfightTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D66FD17B3060435000D25370 /* Debug configuration for PBXNativeTarget "capfightTests" */,
+				D66FD17C3060435000D25370 /* Release configuration for PBXNativeTarget "capfightTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		D66FD17D3060435000D25370 /* Build configuration list for PBXNativeTarget "capfightUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D66FD17E3060435000D25370 /* Debug configuration for PBXNativeTarget "capfightUITests" */,
+				D66FD17F3060435000D25370 /* Release configuration for PBXNativeTarget "capfightUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D66FD1433060434F00D25370 /* Project object */;
+	validationLevel = 1;
+}
