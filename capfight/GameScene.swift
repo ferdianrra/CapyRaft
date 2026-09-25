@@ -11,6 +11,9 @@ class GameScene: SKScene {
     // MARK: - Player & Environment Entities
     var capySlots: [SKSpriteNode?] = [nil, nil, nil]
     var slotOffsets: [CGPoint] = [.zero, .zero, .zero]
+
+    private var storyStartingWoodPosition: CGPoint?
+    private var storyStartingCapybaraPosition: CGPoint?
     
     var wood: SKSpriteNode?
     var playerTemplate: SKSpriteNode?
@@ -111,6 +114,11 @@ class GameScene: SKScene {
         }
     }
     
+    func configureStoryStart(woodPosition: CGPoint, capybaraPosition: CGPoint) {
+        storyStartingWoodPosition = woodPosition
+        storyStartingCapybaraPosition = capybaraPosition
+    }
+
     private func setupWoodAndPlayers() {
         wood = self.childNode(withName: "//Wood") as? SKSpriteNode
         wood?.texture = SKTexture(imageNamed: "half_wood")
@@ -131,6 +139,31 @@ class GameScene: SKScene {
                     originalCapyScale = abs(node.xScale)
                 }
             }
+        }
+
+        applyStoryStartingStateIfNeeded()
+    }
+
+    private func applyStoryStartingStateIfNeeded() {
+        guard
+            let woodPosition = storyStartingWoodPosition,
+            let capybaraPosition = storyStartingCapybaraPosition,
+            let wood,
+            let survivor = capySlots[1]
+        else {
+            return
+        }
+
+        wood.position = woodPosition
+        survivor.position = capybaraPosition
+        slotOffsets[1] = CGPoint(
+            x: capybaraPosition.x - woodPosition.x,
+            y: capybaraPosition.y - woodPosition.y
+        )
+
+        for index in capySlots.indices where index != 1 {
+            capySlots[index]?.removeFromParent()
+            capySlots[index] = nil
         }
     }
     

@@ -4,9 +4,11 @@ final class StoryScene: SKScene {
     private let shallowRiverNode = SKSpriteNode(imageNamed: "story/sungai-dangkal")
     private let fullRiverNode = SKSpriteNode(imageNamed: "story/sungai-penuh")
     private let incomingWaterNode = SKSpriteNode(imageNamed: "story/air-sungai")
+    private let fullRiverCropNode = SKCropNode()
+    private let riverRevealMaskNode = SKSpriteNode(color: .white, size: .zero)
     private let rockOverlayNode = SKSpriteNode(imageNamed: "story/batu")
     private let grassOverlayNode = SKSpriteNode(imageNamed: "story/rumput")
-    private let logNode = SKSpriteNode(imageNamed: "wood")
+    private let logNode = SKSpriteNode(imageNamed: "half_wood")
     private var capybaraNodes: [SKSpriteNode] = []
 
     private var hasStarted = false
@@ -26,9 +28,16 @@ final class StoryScene: SKScene {
         configureFullSceneLayer(shallowRiverNode, zPosition: 10)
         addChild(shallowRiverNode)
 
-        configureFullSceneLayer(fullRiverNode, zPosition: 10)
-        fullRiverNode.alpha = 0
-        addChild(fullRiverNode)
+        configureFullSceneLayer(fullRiverNode, zPosition: 0)
+        fullRiverCropNode.zPosition = 10
+        fullRiverCropNode.addChild(fullRiverNode)
+
+        riverRevealMaskNode.size = CGSize(width: size.width, height: size.height)
+        riverRevealMaskNode.anchorPoint = CGPoint(x: 0, y: 0.5)
+        riverRevealMaskNode.position = CGPoint(x: frame.minX, y: frame.midY)
+        riverRevealMaskNode.xScale = 0.001
+        fullRiverCropNode.maskNode = riverRevealMaskNode
+        addChild(fullRiverCropNode)
 
         configureFullSceneLayer(incomingWaterNode, zPosition: 11)
         incomingWaterNode.position.x = frame.minX - incomingWaterNode.size.width / 2
@@ -76,7 +85,7 @@ final class StoryScene: SKScene {
             let capybara = SKSpriteNode(imageNamed: "cap_character")
             capybara.size = gameCapybaraSize
             capybara.position = CGPoint(
-                x: frame.midX + size.width * positionMultiplier,
+                x: frame.midX + size.width * positionMultiplier * 0.2,
                 y: frame.minY + size.height * 0.17
             )
             capybara.zPosition = 15
@@ -111,23 +120,46 @@ final class StoryScene: SKScene {
     private func bringInWater() {
         guard capybaraNodes.count == 3 else { return }
 
+        let waterDuration: TimeInterval = 1.65
         let waterMove = SKAction.move(
             to: CGPoint(x: frame.midX, y: frame.midY),
-            duration: 1.65
+            duration: waterDuration
         )
-        waterMove.timingMode = .easeInEaseOut
+        waterMove.timingMode = .linear
         incomingWaterNode.run(waterMove)
 
+        let revealFullRiver = SKAction.scaleX(to: 1, duration: waterDuration)
+        revealFullRiver.timingMode = .linear
+        riverRevealMaskNode.run(revealFullRiver)
+
+        let rightmostCapybaraX = capybaraNodes.map(\.position.x).max() ?? frame.midX
+        let contactProgress = max(
+            0,
+            min(1, (rightmostCapybaraX - frame.minX) / size.width)
+        )
+        let contactDelay = waterDuration * contactProgress
+
+        run(.sequence([
+            .wait(forDuration: contactDelay),
+            .run { [weak self] in
+                self?.driftTwoCapybaras()
+            }
+        ]))
+    }
+
+    private func driftTwoCapybaras() {
+        let driftDuration: TimeInterval = 1.8
         let driftingCapybaras = [capybaraNodes[0], capybaraNodes[2]]
+
         for (index, capybara) in driftingCapybaras.enumerated() {
             let drift = SKAction.moveTo(
                 x: frame.maxX + capybara.frame.width * CGFloat(index + 1),
-                duration: 1.8
+                duration: driftDuration
             )
             drift.timingMode = .easeIn
             let sway = SKAction.rotate(
                 toAngle: index == 0 ? 0.22 : -0.22,
-                duration: 1.8,
+                duration: driftDuration,
                 shortestUnitArc: true
             )
 
@@ -138,7 +170,7 @@ final class StoryScene: SKScene {
         }
 
         run(.sequence([
-            .wait(forDuration: 1.65),
+            .wait(forDuration: driftDuration),
             .run { [weak self] in
                 self?.finishRiverTransition()
             }
@@ -146,10 +178,10 @@ final class StoryScene: SKScene {
     }
 
     private func finishRiverTransition() {
-        fullRiverNode.run(.fadeIn(withDuration: 0.25))
-        shallowRiverNode.run(.fadeOut(withDuration: 0.25))
+        shallowRiverNode.removeFromParent()
         incomingWaterNode.run(.sequence([
-            .fadeOut(withDuration: 0.25),
+            .fadeOut(withDuration: 0.2),
+            .removeFromParent(),
             .run { [weak self] in
                 self?.bringInLog()
             }
@@ -201,10 +233,32 @@ final class StoryScene: SKScene {
     }
 
     private func startGame() {
-        guard let gameScene = SKScene(fileNamed: "GameScene") else { return }
+        guard
+            let gameScene = SKScene(fileNamed: "GameScene") as? GameScene,
+            let survivingCapybara = capybaraNodes[safe: 1]
+        else {
+            return
+        }
 
         gameScene.scaleMode = .aspectFill
-        view?.presentScene(gameScene, transition: .fade(withDuration: 0.65))
+        let woodPosition = mapPosition(logNode.position, to: gameScene)
+        let capybaraPosition = mapPosition(survivingCapybara.position, to: gameScene)
+        gameScene.configureStoryStart(
+            woodPosition: woodPosition,
+            capybaraPosition: capybaraPosition
+        )
+
+        view?.presentScene(gameScene)
+    }
+
+    private func mapPosition(_ position: CGPoint, to scene: SKScene) -> CGPoint {
+        let horizontalProgress = (position.x - frame.minX) / size.width
+        let verticalProgress = (position.y - frame.minY) / size.height
+
+        return CGPoint(
+            x: scene.frame.minX + scene.size.width * horizontalProgress,
+            y: scene.frame.minY + scene.size.height * verticalProgress
+        )
     }
 }
 
