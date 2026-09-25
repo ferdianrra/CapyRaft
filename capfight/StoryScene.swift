@@ -4,6 +4,8 @@ final class StoryScene: SKScene {
     private let shallowRiverNode = SKSpriteNode(imageNamed: "story/sungai-dangkal")
     private let fullRiverNode = SKSpriteNode(imageNamed: "story/sungai-penuh")
     private let incomingWaterNode = SKSpriteNode(imageNamed: "story/air-sungai")
+    private let rockOverlayNode = SKSpriteNode(imageNamed: "story/batu")
+    private let grassOverlayNode = SKSpriteNode(imageNamed: "story/rumput")
     private let logNode = SKSpriteNode(imageNamed: "wood")
     private var capybaraNodes: [SKSpriteNode] = []
 
@@ -24,13 +26,19 @@ final class StoryScene: SKScene {
         configureFullSceneLayer(shallowRiverNode, zPosition: 10)
         addChild(shallowRiverNode)
 
-        configureFullSceneLayer(fullRiverNode, zPosition: 11)
+        configureFullSceneLayer(fullRiverNode, zPosition: 10)
         fullRiverNode.alpha = 0
         addChild(fullRiverNode)
 
-        configureFullSceneLayer(incomingWaterNode, zPosition: 12)
+        configureFullSceneLayer(incomingWaterNode, zPosition: 11)
         incomingWaterNode.position.x = frame.minX - incomingWaterNode.size.width / 2
         addChild(incomingWaterNode)
+
+        configureFullSceneLayer(rockOverlayNode, zPosition: 12)
+        addChild(rockOverlayNode)
+
+        configureFullSceneLayer(grassOverlayNode, zPosition: 13)
+        addChild(grassOverlayNode)
 
         addCapybaras()
         configureLog()
