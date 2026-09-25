@@ -43,6 +43,7 @@ class GameScene: SKScene {
     var jumpButton: SKNode!
     var pauseButtonNode: SKNode?
     var pauseOverlayContainer: SKNode?
+    private var gameOverOverlay: SKNode?
     var isGamePaused: Bool = false
     
     var throwCooldownRing: SKShapeNode?
@@ -292,6 +293,70 @@ class GameScene: SKScene {
         pauseOverlayContainer = container
     }
     
+    func showGameOver() {
+        guard gameOverOverlay == nil else { return }
+
+        let overlay = SKNode()
+        overlay.zPosition = 2000
+
+        let dimBackground = SKShapeNode(rectOf: size)
+        dimBackground.fillColor = .black.withAlphaComponent(0.6)
+        dimBackground.strokeColor = .clear
+        overlay.addChild(dimBackground)
+        
+        let content = SKNode()
+        content.position = .zero
+        content.zPosition = 1
+        overlay.addChild(content)
+        
+        let panel = SKSpriteNode(imageNamed: "pause_background")
+        panel.size = CGSize(width: 1000, height: 850)
+        content.addChild(panel)
+
+        func addLabel(
+            _ text: String,
+            y: CGFloat,
+            fontSize: CGFloat,
+            color: SKColor = SKColor(red: 0.22, green: 0.16, blue: 0.10, alpha: 1)
+        ) {
+            let label = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+            label.text = text
+            label.fontSize = fontSize
+            label.fontColor = color
+            label.verticalAlignmentMode = .center
+            label.position = CGPoint(x: 0, y: y)
+            label.zPosition = 2
+            content.addChild(label)
+        }
+
+        let finalScore = viewModel.score
+        let highScore = UserDefaults.standard.integer(forKey: "BestScore")
+        
+        addLabel("GAME OVER", y: 260, fontSize: 62)
+        addLabel("FINAL SCORE", y: 120, fontSize: 32)
+        addLabel("\(finalScore)", y: 35, fontSize: 96)
+        addLabel("HIGH SCORE: \(highScore)", y: -70, fontSize: 32)
+
+        let restartButton = SKSpriteNode(imageNamed: "button/restart_button")
+        restartButton.name = "gameOverRestartButton"
+        restartButton.size = CGSize(width: 390, height: 120)
+        restartButton.position = CGPoint(x: 0, y: -190)
+        restartButton.zPosition = 3
+        content.addChild(restartButton)
+
+        let homeButton = SKSpriteNode(imageNamed: "button/home_button")
+        homeButton.name = "gameOverHomeButton"
+        homeButton.size = CGSize(width: 330, height: 110)
+        homeButton.position = CGPoint(x: 0, y: -325)
+        homeButton.zPosition = 3
+        content.addChild(homeButton)
+
+        addChild(overlay)
+        gameOverOverlay = overlay
+        joystick.resetVelocity()
+        self.speed = 0
+    }
+    
     func pauseGame() {
         guard !viewModel.isGameOverTriggered && !isGamePaused else { return }
         isGamePaused = true
@@ -344,6 +409,21 @@ class GameScene: SKScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
+            
+            if viewModel.isGameOverTriggered {
+                for node in nodes(at: location) {
+                    if isNodeOrAncestorNamed(node, name: "gameOverRestartButton") {
+                        restartGame()
+                        return
+                    }
+
+                    if isNodeOrAncestorNamed(node, name: "gameOverHomeButton") {
+                        goToHome()
+                        return
+                    }
+                }
+                return
+            }
             
             // Check Overlay Touch when Paused
             if isGamePaused {
