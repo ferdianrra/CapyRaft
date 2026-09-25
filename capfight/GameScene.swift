@@ -45,6 +45,8 @@ class GameScene: SKScene {
     var pauseOverlayContainer: SKNode?
     private var gameOverOverlay: SKNode?
     var isGamePaused: Bool = false
+    private var isResuming = false
+    private var countdownLabel: SKLabelNode?
     
     var throwCooldownRing: SKShapeNode?
     var isThrowOnCooldown: Bool = false
@@ -361,15 +363,46 @@ class GameScene: SKScene {
         guard !viewModel.isGameOverTriggered && !isGamePaused else { return }
         isGamePaused = true
         pauseOverlayContainer?.isHidden = false
-        joystick.resetVelocity()
+        joystick.resetTouch()
         self.speed = 0.0
     }
     
     func resumeGame() {
-        guard isGamePaused else { return }
-        isGamePaused = false
+        guard isGamePaused, !isResuming else { return }
+
+        isResuming = true
         pauseOverlayContainer?.isHidden = true
-        self.speed = 1.0
+        joystick.resetTouch()
+
+        let label = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        label.fontSize = 150
+        label.fontColor = .white
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        label.position = .zero
+        label.zPosition = 3000
+        label.text = "3"
+        addChild(label)
+        countdownLabel = label
+
+        // DispatchQueue dipakai karena SKAction ikut berhenti saat scene.speed = 0.
+        for (step, text) in ["2", "1", "GO!"].enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(step + 1)) { [weak self] in
+                guard let self, self.isResuming, self.view?.scene === self else { return }
+                label.text = text
+                label.fontSize = text == "GO!" ? 110 : 150
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self, self.isResuming, self.view?.scene === self else { return }
+
+            label.removeFromParent()
+            self.countdownLabel = nil
+            self.isResuming = false
+            self.isGamePaused = false
+            self.speed = 1.0
+        }
     }
     
     func restartGame() {
