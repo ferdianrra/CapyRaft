@@ -24,11 +24,11 @@ final class GameViewModel {
     }
     
     var obstacleSpeed: CGFloat {
-        return CGFloat(3.0 * difficultyMultiplier)
+        return CGFloat(2.0 * difficultyMultiplier)
     }
     
     var snakeSpeed: CGFloat {
-        return CGFloat(3.4 * difficultyMultiplier)
+        return CGFloat(2.0 * difficultyMultiplier)
     }
     
     var woodBackwardSpeed: CGFloat {

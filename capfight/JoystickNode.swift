@@ -1,8 +1,6 @@
 import SpriteKit
 import UIKit
 
-// MARK: - JoystickNode
-/// Custom SKNode encapsulating joystick UI and velocity calculation
 final class JoystickNode: SKNode {
     
     // MARK: - Properties
@@ -13,27 +11,26 @@ final class JoystickNode: SKNode {
     private(set) var activeTouch: UITouch?
     private(set) var velocity = CGVector.zero
     
-    let baseRadius: CGFloat = 60.0
-    private let knobRadius: CGFloat = 30.0
+    let baseRadius: CGFloat = 120.0
+    private let knobRadius: CGFloat = 60.0
     
-    // MARK: - Initializer & Setup
     func setup(sceneSize: CGSize) {
         baseNode = SKShapeNode(circleOfRadius: baseRadius)
         baseNode.strokeColor = .white
-        baseNode.lineWidth = 3
-        baseNode.alpha = 0.5
-        baseNode.position = CGPoint(x: -sceneSize.width / 2 + 120, y: -sceneSize.height / 2 + 120)
-        baseNode.zPosition = 10
+        baseNode.lineWidth = 5
+        baseNode.alpha = 0.6
+        baseNode.position = CGPoint(x: -sceneSize.width / 2 + 220, y: -sceneSize.height / 2 + 220)
+        baseNode.zPosition = 90
         addChild(baseNode)
         
         knobNode = SKShapeNode(circleOfRadius: knobRadius)
         knobNode.fillColor = .white
         knobNode.position = baseNode.position
-        knobNode.zPosition = 11
+        knobNode.zPosition = 91
         addChild(knobNode)
     }
     
-    // MARK: - Touch Input Handlers
+
     func handleTouchBegan(_ touch: UITouch, location: CGPoint) -> Bool {
         if baseNode.contains(location) && activeTouch == nil {
             isActive = true

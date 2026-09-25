@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "wood.png",
+      "filename" : "parallax_3.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "wood 1.png",
+      "filename" : "parallax_3 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "wood 2.png",
+      "filename" : "parallax_3 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

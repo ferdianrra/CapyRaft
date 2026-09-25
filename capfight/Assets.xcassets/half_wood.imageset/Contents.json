@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "wood.png",
+      "filename" : "half_wood.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "wood 1.png",
+      "filename" : "half_wood 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "wood 2.png",
+      "filename" : "half_wood 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -16,7 +16,7 @@ final class SpawnerManager {
     private(set) var snakeAnimation: SKAction!
     
     // MARK: - Setup
-    func setupTemplates(in scene: SKScene) {
+    func setupTemplates(in scene: SKScene, getScore: @escaping () -> Int = { 0 }) {
         if let snakeNode = scene.childNode(withName: "//snake") as? SKSpriteNode {
             snakeTemplate = snakeNode
             snakeTemplate?.removeFromParent()
@@ -41,7 +41,7 @@ final class SpawnerManager {
         if let rockNode = foundRock {
             rockTemplate = rockNode
             rockTemplate?.removeFromParent()
-            startRockSpawner(in: scene)
+            startRockSpawner(in: scene, getScore: getScore)
         }
         
         if let helpNode = scene.childNode(withName: "//capy_help") as? SKSpriteNode {
@@ -64,6 +64,7 @@ final class SpawnerManager {
     private func spawnSingleSnake(in scene: SKScene) {
         guard let template = snakeTemplate, let newSnake = template.copy() as? SKSpriteNode else { return }
         newSnake.isHidden = false
+        newSnake.zPosition = 10
         let spawnY = CGFloat.random(in: -scene.size.height / 2 + 180 ... -40.0)
         newSnake.position = CGPoint(x: scene.size.width / 2 + 150, y: spawnY)
         newSnake.run(snakeAnimation)
@@ -71,22 +72,66 @@ final class SpawnerManager {
         activeSnakes.append(newSnake)
     }
     
-    private func startRockSpawner(in scene: SKScene) {
+    private func startRockSpawner(in scene: SKScene, getScore: @escaping () -> Int) {
         let waitAction = SKAction.wait(forDuration: 3.5, withRange: 1.0)
         let spawnAction = SKAction.run { [weak self, weak scene] in
             guard let scene = scene else { return }
-            self?.spawnSingleRock(in: scene)
+            let score = getScore()
+            self?.spawnRocks(in: scene, score: score)
         }
         scene.run(SKAction.repeatForever(SKAction.sequence([waitAction, spawnAction])))
     }
     
-    private func spawnSingleRock(in scene: SKScene) {
-        guard let template = rockTemplate, let newRock = template.copy() as? SKSpriteNode else { return }
-        newRock.isHidden = false
-        let spawnY = CGFloat.random(in: -scene.size.height / 2 + 180 ... -40.0)
-        newRock.position = CGPoint(x: scene.size.width / 2 + 150, y: spawnY)
-        scene.addChild(newRock)
-        activeRocks.append(newRock)
+    private func spawnRocks(in scene: SKScene, score: Int) {
+        guard let template = rockTemplate else { return }
+        
+        // Tentukan jumlah batu berdasarkan skor
+        let rockCount: Int
+        let randomVal = Double.random(in: 0.0...1.0)
+        if score < 100 {
+            rockCount = 1
+        } else if score < 250 {
+            rockCount = randomVal < 0.40 ? 2 : 1 // 40% peluang 2 batu saat skor 100-250
+        } else {
+            rockCount = randomVal < 0.70 ? 2 : 1 // 70% peluang 2 batu saat skor > 250
+        }
+        
+        let minY = -scene.size.height / 2 + 180
+        let maxY = -40.0
+        let spawnX = scene.size.width / 2 + 150
+        
+        if rockCount == 1 {
+            guard let newRock = template.copy() as? SKSpriteNode else { return }
+            newRock.isHidden = false
+            newRock.zPosition = 8
+            newRock.position = CGPoint(x: spawnX, y: CGFloat.random(in: minY...maxY))
+            scene.addChild(newRock)
+            activeRocks.append(newRock)
+        } else {
+            // Spawn 2 batu di posisi Y & X yang berbeda agar pemain punya celah untuk lewat/melompat
+            let midY = (minY + maxY) / 2.0
+            
+            // Batu 1: Jalur Atas / Tengah
+            if let rock1 = template.copy() as? SKSpriteNode {
+                rock1.isHidden = false
+                rock1.zPosition = 8
+                let spawnY1 = CGFloat.random(in: midY + 10 ... maxY)
+                rock1.position = CGPoint(x: spawnX, y: spawnY1)
+                scene.addChild(rock1)
+                activeRocks.append(rock1)
+            }
+            
+            // Batu 2: Jalur Bawah / Tergeser ke kanan sedikit (agar variatif)
+            if let rock2 = template.copy() as? SKSpriteNode {
+                rock2.isHidden = false
+                rock2.zPosition = 8
+                let spawnY2 = CGFloat.random(in: minY ... midY - 10)
+                let offsetX2 = CGFloat.random(in: 0...100) // Variasi X sedikit agar tidak berjejer kaku
+                rock2.position = CGPoint(x: spawnX + offsetX2, y: spawnY2)
+                scene.addChild(rock2)
+                activeRocks.append(rock2)
+            }
+        }
     }
     
     private func startCapyHelpSpawner(in scene: SKScene) {
@@ -101,8 +146,18 @@ final class SpawnerManager {
     private func spawnSingleCapyHelp(in scene: SKScene) {
         guard let template = capyHelpTemplate, let newHelp = template.copy() as? SKSpriteNode else { return }
         newHelp.isHidden = false
+        newHelp.zPosition = 8
         let spawnY = CGFloat.random(in: -scene.size.height / 2 + 180 ... -40.0)
         newHelp.position = CGPoint(x: scene.size.width / 2 + 150, y: spawnY)
+        
+        let lilipadTextures = [
+            SKTexture(imageNamed: "capybara_lilipad/capybara_lilipad_1"),
+            SKTexture(imageNamed: "capybara_lilipad/capybara_lilipad_2"),
+            SKTexture(imageNamed: "capybara_lilipad/capybara_lilipad_3")
+        ]
+        let lilipadAnim = SKAction.repeatForever(SKAction.animate(with: lilipadTextures, timePerFrame: 0.2))
+        newHelp.run(lilipadAnim)
+        
         scene.addChild(newHelp)
         activeCapyHelps.append(newHelp)
     }
