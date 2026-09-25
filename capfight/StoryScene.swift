@@ -58,18 +58,18 @@ final class StoryScene: SKScene {
 
     private func addCapybaras() {
         let positions: [CGFloat] = [-0.22, 0, 0.22]
-        let capybaraHeight = size.height * 0.22
+        let sceneScale = min(size.width / 2532, size.height / 1170)
+        let gameCapybaraSize = CGSize(
+            width: 150.754 * sceneScale,
+            height: 149.917 * sceneScale
+        )
 
         for positionMultiplier in positions {
             let capybara = SKSpriteNode(imageNamed: "cap_character")
-            let textureSize = capybara.texture?.size() ?? CGSize(width: 1, height: 1)
-            capybara.size = CGSize(
-                width: capybaraHeight * textureSize.width / textureSize.height,
-                height: capybaraHeight
-            )
+            capybara.size = gameCapybaraSize
             capybara.position = CGPoint(
                 x: frame.midX + size.width * positionMultiplier,
-                y: frame.minY + size.height * 0.27
+                y: frame.minY + size.height * 0.17
             )
             capybara.zPosition = 15
             addChild(capybara)
@@ -78,15 +78,14 @@ final class StoryScene: SKScene {
     }
 
     private func configureLog() {
-        let logWidth = size.width * 0.38
-        let textureSize = logNode.texture?.size() ?? CGSize(width: 1, height: 1)
+        let sceneScale = min(size.width / 2532, size.height / 1170)
         logNode.size = CGSize(
-            width: logWidth,
-            height: logWidth * textureSize.height / textureSize.width
+            width: 404.812 * sceneScale,
+            height: 404.812 * sceneScale
         )
         logNode.position = CGPoint(
-            x: frame.minX - logNode.size.width,
-            y: frame.minY + size.height * 0.23
+            x: frame.minX - logNode.frame.width / 2,
+            y: frame.minY + size.height * 0.28
         )
         logNode.zPosition = 14
         addChild(logNode)
@@ -114,7 +113,7 @@ final class StoryScene: SKScene {
         let driftingCapybaras = [capybaraNodes[0], capybaraNodes[2]]
         for (index, capybara) in driftingCapybaras.enumerated() {
             let drift = SKAction.moveTo(
-                x: frame.maxX + capybara.size.width * CGFloat(index + 1),
+                x: frame.maxX + capybara.frame.width * CGFloat(index + 1),
                 duration: 1.8
             )
             drift.timingMode = .easeIn
@@ -151,8 +150,8 @@ final class StoryScene: SKScene {
 
     private func bringInLog() {
         let destination = CGPoint(
-            x: frame.midX + size.width * 0.08,
-            y: frame.minY + size.height * 0.23
+            x: frame.midX,
+            y: frame.minY + size.height * 0.28
         )
         let move = SKAction.move(to: destination, duration: 1.15)
         move.timingMode = .easeOut
@@ -170,12 +169,12 @@ final class StoryScene: SKScene {
         guard let capybara = capybaraNodes[safe: 1] else { return }
 
         let landingPosition = CGPoint(
-            x: logNode.position.x - logNode.size.width * 0.12,
-            y: logNode.position.y + logNode.size.height * 0.46
+            x: logNode.position.x,
+            y: logNode.position.y + size.height * 0.035
         )
         let jumpPeak = CGPoint(
             x: (capybara.position.x + landingPosition.x) / 2,
-            y: max(capybara.position.y, landingPosition.y) + size.height * 0.20
+            y: max(capybara.position.y, landingPosition.y) + size.height * 0.10
         )
 
         let jumpUp = SKAction.move(to: jumpPeak, duration: 0.42)
