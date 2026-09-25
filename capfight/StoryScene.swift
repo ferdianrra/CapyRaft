@@ -10,6 +10,8 @@ final class StoryScene: SKScene {
     private let grassOverlayNode = SKSpriteNode(imageNamed: "story/rumput")
     private let logNode = SKSpriteNode(imageNamed: "half_wood")
     private var capybaraNodes: [SKSpriteNode] = []
+    private var gameplayRiverPosition = CGPoint.zero
+    private var gameplayRiverSize = CGSize.zero
 
     private var hasStarted = false
 
@@ -25,28 +27,31 @@ final class StoryScene: SKScene {
     private func buildScene() {
         addParallaxBackground()
 
-        configureFullSceneLayer(shallowRiverNode, zPosition: 10)
+        configureRiverLayer(shallowRiverNode, zPosition: 10)
         addChild(shallowRiverNode)
 
-        configureFullSceneLayer(fullRiverNode, zPosition: 0)
+        configureRiverLayer(fullRiverNode, zPosition: 0)
         fullRiverCropNode.zPosition = 10
         fullRiverCropNode.addChild(fullRiverNode)
 
-        riverRevealMaskNode.size = CGSize(width: size.width, height: size.height)
+        riverRevealMaskNode.size = gameplayRiverSize == .zero ? size : gameplayRiverSize
         riverRevealMaskNode.anchorPoint = CGPoint(x: 0, y: 0.5)
-        riverRevealMaskNode.position = CGPoint(x: frame.minX, y: frame.midY)
+        riverRevealMaskNode.position = CGPoint(
+            x: gameplayRiverPosition.x - riverRevealMaskNode.size.width / 2,
+            y: gameplayRiverPosition.y
+        )
         riverRevealMaskNode.xScale = 0.001
         fullRiverCropNode.maskNode = riverRevealMaskNode
         addChild(fullRiverCropNode)
 
-        configureFullSceneLayer(incomingWaterNode, zPosition: 11)
+        configureRiverLayer(incomingWaterNode, zPosition: 11)
         incomingWaterNode.position.x = frame.minX - incomingWaterNode.size.width / 2
         addChild(incomingWaterNode)
 
-        configureFullSceneLayer(rockOverlayNode, zPosition: 12)
+        configureRiverLayer(rockOverlayNode, zPosition: 12)
         addChild(rockOverlayNode)
 
-        configureFullSceneLayer(grassOverlayNode, zPosition: 13)
+        configureRiverLayer(grassOverlayNode, zPosition: 13)
         addChild(grassOverlayNode)
 
         addCapybaras()
@@ -54,12 +59,58 @@ final class StoryScene: SKScene {
     }
 
     private func addParallaxBackground() {
+        guard let gameSceneTemplate = SKScene(fileNamed: "GameScene") else {
+            addFallbackParallaxBackground()
+            return
+        }
+
+        if let river = gameSceneTemplate.childNode(withName: "//bg1") as? SKSpriteNode {
+            gameplayRiverPosition = river.position
+            gameplayRiverSize = river.size
+        }
+
+        let nodeNames = [
+            "parallax_a_bg_1",
+            "parallax_b_bg_1",
+            "parallax_c_bg_1",
+            "parallax_d_bg_1",
+            "parallax_e_bg_1"
+        ]
+
+        for (index, nodeName) in nodeNames.enumerated() {
+            guard
+                let sourceNode = gameSceneTemplate.childNode(withName: "//\(nodeName)") as? SKSpriteNode,
+                let layer = sourceNode.copy() as? SKSpriteNode
+            else {
+                continue
+            }
+
+            layer.removeAllActions()
+            layer.zPosition = CGFloat(index + 1)
+            addChild(layer)
+        }
+    }
+
+    private func addFallbackParallaxBackground() {
+        gameplayRiverPosition = CGPoint(x: frame.midX, y: frame.midY)
+        gameplayRiverSize = size
+
         for index in 1...5 {
             let layer = SKSpriteNode(imageNamed: "parallax_\(index)")
             configureFullSceneLayer(layer, zPosition: CGFloat(index))
-            layer.position.y += size.height * 0.60
             addChild(layer)
         }
+    }
+
+    private func configureRiverLayer(_ node: SKSpriteNode, zPosition: CGFloat) {
+        if gameplayRiverSize == .zero {
+            configureFullSceneLayer(node, zPosition: zPosition)
+            return
+        }
+
+        node.size = gameplayRiverSize
+        node.position = gameplayRiverPosition
+        node.zPosition = zPosition
     }
 
     private func configureFullSceneLayer(_ node: SKSpriteNode, zPosition: CGFloat) {
@@ -122,7 +173,7 @@ final class StoryScene: SKScene {
 
         let waterDuration: TimeInterval = 1.65
         let waterMove = SKAction.move(
-            to: CGPoint(x: frame.midX, y: frame.midY),
+            to: gameplayRiverPosition,
             duration: waterDuration
         )
         waterMove.timingMode = .linear
