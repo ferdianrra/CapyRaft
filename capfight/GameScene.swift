@@ -61,7 +61,7 @@ class GameScene: SKScene {
         
         isGamePaused = false
         isThrowOnCooldown = false
-        throwButton?.alpha = 0.7
+        throwButton?.alpha = 1.0
         throwCooldownRing?.path = nil
         
         scoreLabel = self.childNode(withName: "//scoreLabel") as? SKLabelNode
@@ -229,27 +229,20 @@ class GameScene: SKScene {
     }
     
     private func setupButtons() {
-        let buttonRadius: CGFloat = 95.0
-        
+        let buttonSize = CGSize(width: 220, height: 220)
         if let existingPause = self.childNode(withName: "//pauseButton") {
             existingPause.zPosition = 95
             pauseButtonNode = existingPause
         }
         
-        if let existingThrow = self.childNode(withName: "//throwButton") {
-            existingThrow.setScale(2.5)
-            existingThrow.position = CGPoint(x: size.width / 2 - 180, y: -size.height / 2 + 180)
-            existingThrow.zPosition = 90
-            throwButton = existingThrow
-        } else {
-            let node = SKShapeNode(circleOfRadius: buttonRadius)
-            node.fillColor = .red
-            node.alpha = 0.7
-            node.position = CGPoint(x: size.width / 2 - 180, y: -size.height / 2 + 180)
-            node.zPosition = 90
-            addChild(node)
-            throwButton = node
-        }
+        self.childNode(withName: "//throwButton")?.removeFromParent()
+        let throwSprite = SKSpriteNode(imageNamed: "throw_rock_button")
+        throwSprite.name = "throwButton"
+        throwSprite.size = buttonSize
+        throwSprite.position = CGPoint(x: size.width / 2 - 145, y: -size.height / 2 + 275)
+        throwSprite.zPosition = 90
+        addChild(throwSprite)
+        throwButton = throwSprite
         
         // Circular Cooldown Progress Indicator Ring
         throwCooldownRing?.removeFromParent()
@@ -262,20 +255,14 @@ class GameScene: SKScene {
         addChild(ringNode)
         throwCooldownRing = ringNode
         
-        if let existingJump = self.childNode(withName: "//jumpButton") {
-            existingJump.setScale(2.5)
-            existingJump.position = CGPoint(x: size.width / 2 - 380, y: -size.height / 2 + 280)
-            existingJump.zPosition = 90
-            jumpButton = existingJump
-        } else {
-            let node = SKShapeNode(circleOfRadius: buttonRadius)
-            node.fillColor = .blue
-            node.alpha = 0.7
-            node.position = CGPoint(x: size.width / 2 - 380, y: -size.height / 2 + 280)
-            node.zPosition = 90
-            addChild(node)
-            jumpButton = node
-        }
+        self.childNode(withName: "//jumpButton")?.removeFromParent()
+        let jumpSprite = SKSpriteNode(imageNamed: "jump_button")
+        jumpSprite.name = "jumpButton"
+        jumpSprite.size = buttonSize
+        jumpSprite.position = CGPoint(x: size.width / 2 - 335, y: -size.height / 2 + 135)
+        jumpSprite.zPosition = 90
+        addChild(jumpSprite)
+        jumpButton = jumpSprite
     }
     
     // MARK: - Pause Overlay & Logic
@@ -430,7 +417,7 @@ class GameScene: SKScene {
         isThrowOnCooldown = true
         throwButton?.alpha = 0.35
         
-        let ringRadius: CGFloat = 102.0
+        let ringRadius: CGFloat = 118.0
         let duration = self.throwCooldownDuration
         let cooldownAction = SKAction.customAction(withDuration: duration) { node, elapsedTime in
             guard let shape = node as? SKShapeNode else { return }
@@ -443,7 +430,7 @@ class GameScene: SKScene {
         
         let finishAction = SKAction.run { [weak self] in
             self?.isThrowOnCooldown = false
-            self?.throwButton?.alpha = 0.7
+        self?.throwButton?.alpha = 1.0
             self?.throwCooldownRing?.path = nil
         }
         
