@@ -61,6 +61,9 @@ class GameScene: SKScene {
     let capyZPosition: CGFloat = 12
     
     override func didMove(to view: SKView) {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+
         self.view?.isMultipleTouchEnabled = true
         viewModel.reset()
         
@@ -470,6 +473,15 @@ class GameScene: SKScene {
         return false
     }
     
+    private func playButtonSound() {
+        run(SKAction.playSoundFileNamed("button_clicked.mp3", waitForCompletion: false))
+    }
+
+    private func triggerHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .heavy)
+        generator.impactOccurred()
+    }
+    
     // MARK: - Touch Input Handlers
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
@@ -478,11 +490,13 @@ class GameScene: SKScene {
             if viewModel.isGameOverTriggered {
                 for node in nodes(at: location) {
                     if isNodeOrAncestorNamed(node, name: "gameOverRestartButton") {
+                        playButtonSound()
                         restartGame()
                         return
                     }
 
                     if isNodeOrAncestorNamed(node, name: "gameOverHomeButton") {
+                        playButtonSound()
                         goToHome()
                         return
                     }
@@ -497,12 +511,15 @@ class GameScene: SKScene {
                     let touchedNodes = container.nodes(at: overlayLocation)
                     for node in touchedNodes {
                         if isNodeOrAncestorNamed(node, name: "resumeButton") {
+                            playButtonSound()
                             resumeGame()
                             return
                         } else if isNodeOrAncestorNamed(node, name: "restartButton") {
+                            playButtonSound()
                             restartGame()
                             return
                         } else if isNodeOrAncestorNamed(node, name: "homeButton") {
+                            playButtonSound()
                             goToHome()
                             return
                         }
@@ -514,6 +531,7 @@ class GameScene: SKScene {
             // Check Pause Button Touch
             if let pauseBtn = pauseButtonNode {
                 if pauseBtn.contains(location) || self.nodes(at: location).contains(where: { isNodeOrAncestorNamed($0, name: "pauseButton") }) {
+                    playButtonSound()
                     pauseGame()
                     return
                 }
@@ -522,8 +540,14 @@ class GameScene: SKScene {
             if joystick.handleTouchBegan(touch, location: location) {
                 continue
             }
-            if let throwNode = throwButton, throwNode.contains(location) { performThrow() }
-            if let jumpNode = jumpButton, jumpNode.contains(location) { performJump() }
+            if let throwNode = throwButton, throwNode.contains(location) { 
+                playButtonSound()
+                performThrow() 
+            }
+            if let jumpNode = jumpButton, jumpNode.contains(location) { 
+                playButtonSound()
+                performJump() 
+            }
         }
     }
     
@@ -746,7 +770,12 @@ class GameScene: SKScene {
         let normalMinX = -size.width / 2 + marginX
         let maxX = size.width / 2 - marginX
         
-        if isBlockedByRock { viewModel.isRecovering = true }
+        if isBlockedByRock { 
+            if !viewModel.isRecovering {
+                triggerHapticFeedback()
+            }
+            viewModel.isRecovering = true 
+        }
         if w.position.x >= normalMinX { viewModel.isRecovering = false }
         
         let appliedMinX = viewModel.isRecovering ? (-size.width - 1000.0) : normalMinX
@@ -818,11 +847,15 @@ class GameScene: SKScene {
         
         for croc in spawnerManager.activeCrocodiles {
             for capy in livingCapys {
-                let dx = abs(croc.position.x - capy.position.x)
-                let dy = abs(croc.position.y - capy.position.y)
+                // Menyesuaikan hitbox ke posisi mulut buaya (di sebelah kiri atas sprite)
+                let crocMouthX = croc.position.x - (croc.size.width * 0.35)
+                let crocMouthY = croc.position.y + (croc.size.height * 0.20)
                 
-                // Tabrakan hanya terjadi jika salah satu capybara secara visual menyentuh buaya
-                if dx < 40.0 && dy < 30.0 {
+                let dx = abs(crocMouthX - capy.position.x)
+                let dy = abs(crocMouthY - capy.position.y)
+                
+                // Tabrakan presisi hanya dengan mulut buaya
+                if dx < 30.0 && dy < 30.0 {
                     triggerCrocodileEat(croc: croc)
                     return // Game Over triggered, stop checking
                 }
@@ -834,6 +867,7 @@ class GameScene: SKScene {
         guard !viewModel.isGameOverTriggered && !isCrocodileEating else { return }
         isCrocodileEating = true
 
+        triggerHapticFeedback()
         run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
         
         let mouthOpenTexture = SKTexture(imageNamed: "crocodile/crocodile_2")
@@ -874,16 +908,16 @@ class GameScene: SKScene {
     }
 
     // Tuning knobs — ubah di sini buat rasain beda feel-nya
-    private let snakePauseDuration: CGFloat = 1.0      // durasi "mikir" sebelum mulai muter (detik)
-    private let snakeWindupDuration: CGFloat = 0.8     // durasi ramp-up sebelum full strike (detik)
-    private let snakeApproachTurnRateFar: CGFloat = 0.045
-    private let snakeApproachTurnRateNear: CGFloat = 0.025
-    private let snakeStrikeTurnRate: CGFloat = 0.025
-    private let snakeStrikeSpeedMult: CGFloat = 0.25
-    private let snakeWindupStartTurnRate: CGFloat = 0.008
-    private let snakeWindupStartSpeedMult: CGFloat = 0.08
+    private let snakePauseDuration: CGFloat = 0.5      // durasi "mikir" sebelum mulai muter (detik)
+    private let snakeWindupDuration: CGFloat = 0.5     // durasi ramp-up sebelum full strike (detik)
+    private let snakeApproachTurnRateFar: CGFloat = 0.08
+    private let snakeApproachTurnRateNear: CGFloat = 0.08
+    private let snakeStrikeTurnRate: CGFloat = 0.05
+    private let snakeStrikeSpeedMult: CGFloat = 1.8
+    private let snakeWindupStartTurnRate: CGFloat = 0.01
+    private let snakeWindupStartSpeedMult: CGFloat = 0.5
     private let snakeProximityBoostRadius: CGFloat = 300.0
-    private let snakeProximityBoostMult: CGFloat = 1.15
+    private let snakeProximityBoostMult: CGFloat = 1.5
 
     private func updateSnakes(isJumping: Bool, leftOffScreen: CGFloat) {
         let dt: CGFloat = 1.0 / 60.0
@@ -955,7 +989,18 @@ class GameScene: SKScene {
             switch state {
             case .approach:
                 maxTurnRate = distanceToTarget > 250 ? snakeApproachTurnRateFar : snakeApproachTurnRateNear
-                moveSpeed = viewModel.snakeSpeed
+                
+                // Sprint logic: Ular lari cepat (ngejar) kalau masih jauh, lalu melambat saat sudah dekat
+                let xDist = abs(realDx)
+                let sprintMultiplier: CGFloat
+                if xDist > 400 {
+                    sprintMultiplier = 3.5
+                } else if xDist > 200 {
+                    sprintMultiplier = 2.0
+                } else {
+                    sprintMultiplier = 1.0
+                }
+                moveSpeed = viewModel.snakeSpeed * sprintMultiplier
             case .paused:
                 maxTurnRate = snakeApproachTurnRateNear
                 moveSpeed = viewModel.snakeSpeed
@@ -1017,6 +1062,7 @@ class GameScene: SKScene {
                     let dyHit = capy.position.y - enemy.position.y
 
                     if hypot(dxHit, dyHit) < hitRadius && !isJumping {
+                        triggerHapticFeedback()
                         capySlots[i] = nil
                         updateLifeHUD()
                         capy.name = "dying_capy"
@@ -1066,6 +1112,7 @@ class GameScene: SKScene {
                 // Gunakan bounding box yang lebih lebar agar tidak "nembus" visual ular
                 if dxHit < 80.0 && dyHit < 100.0 {
                     hit = true
+                    run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
                     
                     let knockbackX = (dxHit < 0) ? -200.0 : 200.0
                     let knockback = SKAction.moveBy(x: knockbackX, y: 150, duration: 0.3)

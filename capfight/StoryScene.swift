@@ -12,6 +12,8 @@ final class StoryScene: SKScene {
     private var capybaraNodes: [SKSpriteNode] = []
     private var gameplayRiverPosition = CGPoint.zero
     private var gameplayRiverSize = CGSize.zero
+    
+    private var floodAudioNode: SKAudioNode?
 
     private var hasStarted = false
 
@@ -201,6 +203,14 @@ final class StoryScene: SKScene {
 
     private func bringInWater() {
         guard capybaraNodes.count == 3 else { return }
+        
+        let audioNode = SKAudioNode(fileNamed: "river_flood.mp3")
+        audioNode.autoplayLooped = false
+        addChild(audioNode)
+        audioNode.run(.changeVolume(to: 0, duration: 0))
+        audioNode.run(.play())
+        audioNode.run(.changeVolume(to: 1.0, duration: 0.8))
+        floodAudioNode = audioNode
 
         let waterDuration: TimeInterval = 1.65
         let initialLeadingEdgeX = incomingWaterNode.frame.maxX
@@ -355,6 +365,7 @@ final class StoryScene: SKScene {
                     above: capybara,
                     textColor: .black
                 )
+                self.floodAudioNode?.run(.changeVolume(to: 0, duration: 1.4))
             },
             .wait(forDuration: 1.4),
             .run { [weak self] in
@@ -379,7 +390,8 @@ final class StoryScene: SKScene {
             capybaraPosition: capybaraPosition
         )
 
-        view?.presentScene(gameScene)
+        let transition = SKTransition.crossFade(withDuration: 1.0)
+        view?.presentScene(gameScene, transition: transition)
     }
 
     private func mapPosition(_ position: CGPoint, to scene: SKScene) -> CGPoint {
