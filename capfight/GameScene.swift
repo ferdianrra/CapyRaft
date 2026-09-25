@@ -45,6 +45,7 @@ class GameScene: SKScene {
     var pauseOverlayContainer: SKNode?
     private var gameOverOverlay: SKNode?
     var isGamePaused: Bool = false
+    private var isCrocodileEating = false
     private var isResuming = false
     private var countdownLabel: SKLabelNode?
     
@@ -52,6 +53,7 @@ class GameScene: SKScene {
     var isThrowOnCooldown: Bool = false
     let throwCooldownDuration: TimeInterval = 1.5
     var scoreLabel: SKLabelNode?
+    private var lifeIcons: [SKSpriteNode] = []
     private var bgMusicNode: SKAudioNode?
     
     let riverTopMargin: CGFloat = 90.0
@@ -71,6 +73,7 @@ class GameScene: SKScene {
         scoreLabel?.text = "Score: 0"
         
         setupWoodAndPlayers()
+        setupLifeHUD()
         setupBackgrounds()
         setupBackgroundMusic()
         
@@ -85,6 +88,34 @@ class GameScene: SKScene {
         
         setupButtons()
         setupPauseOverlay()
+    }
+    
+    private func setupLifeHUD() {
+        lifeIcons.forEach { $0.removeFromParent() }
+        lifeIcons.removeAll()
+
+        for index in 0..<3 {
+            let icon = SKSpriteNode(imageNamed: "capy_head")
+            icon.name = "lifeIcon\(index)"
+            icon.size = CGSize(width: 90, height: 90)
+            icon.position = CGPoint(
+                x: -size.width / 2 + 125 + CGFloat(index) * 105,
+                y: size.height / 2 - 145
+            )
+            icon.zPosition = 500
+            addChild(icon)
+            lifeIcons.append(icon)
+        }
+
+        updateLifeHUD()
+    }
+
+    private func updateLifeHUD() {
+        let livingCount = capySlots.compactMap { $0 }.count
+
+        for (index, icon) in lifeIcons.enumerated() {
+            icon.alpha = index < livingCount ? 1.0 : 0.25
+        }
     }
     
     private func setupBackgroundMusic() {
@@ -148,6 +179,12 @@ class GameScene: SKScene {
     }
 
     private func applyStoryStartingStateIfNeeded() {
+        // Setiap permainan baru, termasuk restart, mulai dengan 1 capybara.
+        for index in capySlots.indices where index != 1 {
+            capySlots[index]?.removeFromParent()
+            capySlots[index] = nil
+        }
+
         guard
             let woodPosition = storyStartingWoodPosition,
             let capybaraPosition = storyStartingCapybaraPosition,
@@ -163,11 +200,6 @@ class GameScene: SKScene {
             x: capybaraPosition.x - woodPosition.x,
             y: capybaraPosition.y - woodPosition.y
         )
-
-        for index in capySlots.indices where index != 1 {
-            capySlots[index]?.removeFromParent()
-            capySlots[index] = nil
-        }
     }
     
     private func setupBackgrounds() {
@@ -618,11 +650,13 @@ class GameScene: SKScene {
         let leftOffScreen = -size.width - 1000.0
         
         // KONDISI KALAH 1: Semua capybara mati
-        if !viewModel.isGameOverTriggered {
-            let livingCapys = capySlots.compactMap { $0 }
-            let dyingCapys = self.children.filter { $0.name == "dying_capy" }
-            if livingCapys.isEmpty && dyingCapys.isEmpty {
+        if !viewModel.isGameOverTriggered && !isCrocodileEating {
+            let hasLivingCapy = capySlots.contains { $0 != nil }
+            let hasDyingCapy = children.contains { $0.name == "dying_capy" }
+
+            if !hasLivingCapy && !hasDyingCapy {
                 viewModel.triggerGameOver(in: self)
+                return
             }
         }
         
@@ -738,7 +772,7 @@ class GameScene: SKScene {
         }
         
         // Rescue Item Collision
-        if !isJumping {
+        if !isJumping, !viewModel.isGameOverTriggered, !isCrocodileEating, capySlots.contains(where: { $0 != nil }) {
             for (index, help) in spawnerManager.activeCapyHelps.enumerated().reversed() {
                 if hypot(w.position.x - help.position.x, w.position.y - help.position.y) < 120.0 {
                     help.removeFromParent()
@@ -752,6 +786,7 @@ class GameScene: SKScene {
                                 newChar.zPosition = capyZPosition
                                 self.addChild(newChar)
                                 capySlots[i] = newChar
+                                updateLifeHUD()
                                 startCapyIdleAnimation(for: newChar)
                             }
                             break
@@ -796,8 +831,9 @@ class GameScene: SKScene {
     }
     
     private func triggerCrocodileEat(croc: SKSpriteNode) {
-        guard !viewModel.isGameOverTriggered else { return }
-        
+        guard !viewModel.isGameOverTriggered && !isCrocodileEating else { return }
+        isCrocodileEating = true
+
         run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
         
         let mouthOpenTexture = SKTexture(imageNamed: "crocodile/crocodile_2")
@@ -812,6 +848,7 @@ class GameScene: SKScene {
             capySlots[i]?.isHidden = true
             capySlots[i] = nil
         }
+        updateLifeHUD()
         
         // Sequence: Hold mouth open for 0.4s (eating), close mouth (mingkep), then show Game Over screen
         let waitEating = SKAction.wait(forDuration: 0.4)
@@ -981,6 +1018,7 @@ class GameScene: SKScene {
 
                     if hypot(dxHit, dyHit) < hitRadius && !isJumping {
                         capySlots[i] = nil
+                        updateLifeHUD()
                         capy.name = "dying_capy"
                         capy.removeAllActions()
 
