@@ -44,7 +44,7 @@ class GameScene: SKScene {
     
     var throwCooldownRing: SKShapeNode?
     var isThrowOnCooldown: Bool = false
-    let throwCooldownDuration: TimeInterval = 2.0
+    let throwCooldownDuration: TimeInterval = 1.5
     var scoreLabel: SKLabelNode?
     private var bgMusicNode: SKAudioNode?
     
@@ -539,10 +539,12 @@ class GameScene: SKScene {
         
         let isJumping = w.action(forKey: "jumping") != nil
         
-        let gerakSpeed: CGFloat = 5.5
+        // Gerak capybara dibuat 100% sebanding/proporsional dengan kecepatan sungai
+        let gerakSpeed: CGFloat = 7.0 * CGFloat(viewModel.difficultyMultiplier)
+        
         var targetVelocityX = (joystick.velocity.dx * gerakSpeed) + viewModel.woodBackwardSpeed
         let targetVelocityY = joystick.velocity.dy * gerakSpeed
-        let friction: CGFloat = 0.15
+        let friction: CGFloat = 0.20
         
         currentVelocity.dx += (targetVelocityX - currentVelocity.dx) * friction
         currentVelocity.dy += (targetVelocityY - currentVelocity.dy) * friction
@@ -635,81 +637,182 @@ class GameScene: SKScene {
             }
         }
         
+        checkCrocodileCollisions(isJumping: isJumping)
         updateSnakes(isJumping: isJumping, leftOffScreen: leftOffScreen)
         updateProjectiles()
     }
     
+    // MARK: - Crocodile Obstacle Logic
+    private func checkCrocodileCollisions(isJumping: Bool) {
+        guard let w = wood, !isJumping, !viewModel.isGameOverTriggered else { return }
+        
+        let livingCapys = capySlots.compactMap { $0 }
+        
+        for croc in spawnerManager.activeCrocodiles {
+            for capy in livingCapys {
+                let dx = abs(croc.position.x - capy.position.x)
+                let dy = abs(croc.position.y - capy.position.y)
+                
+                // Tabrakan hanya terjadi jika salah satu capybara secara visual menyentuh buaya
+                if dx < 40.0 && dy < 30.0 {
+                    triggerCrocodileEat(croc: croc)
+                    return // Game Over triggered, stop checking
+                }
+            }
+        }
+    }
+    
+    private func triggerCrocodileEat(croc: SKSpriteNode) {
+        guard !viewModel.isGameOverTriggered else { return }
+        
+        run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
+        
+        let mouthOpenTexture = SKTexture(imageNamed: "crocodile/crocodile_2")
+        let mouthClosedTexture = SKTexture(imageNamed: "crocodile/crocodile_1")
+        
+        // Open mouth wide (Mangap!)
+        croc.texture = mouthOpenTexture
+        
+        // Hide wood & capybaras (swallowed by crocodile)
+        wood?.isHidden = true
+        for i in 0..<3 {
+            capySlots[i]?.isHidden = true
+            capySlots[i] = nil
+        }
+        
+        // Sequence: Hold mouth open for 0.4s (eating), close mouth (mingkep), then show Game Over screen
+        let waitEating = SKAction.wait(forDuration: 0.4)
+        let closeMouth = SKAction.run {
+            croc.texture = mouthClosedTexture
+        }
+        let delayGameOver = SKAction.wait(forDuration: 0.2)
+        let showGameOver = SKAction.run { [weak self] in
+            guard let self = self else { return }
+            self.viewModel.triggerGameOver(in: self)
+        }
+        
+        croc.run(SKAction.sequence([waitEating, closeMouth, delayGameOver, showGameOver]))
+    }
+    
+    // MARK: - Snake State Machine
+
+    private enum SnakeState: String {
+        case approach   // Fase 1: ngincer & ngejar capybara dari kanan
+        case paused     // Fase 2: baru lewatin capybara, "mikir" dulu sebelum muter
+        case windup     // Fase 3: mulai muter balik, speed & turn rate ramp-up (window buat dodge!)
+        case strike     // Fase 4: full speed ngejar balik, terkunci ke target
+    }
+
+    // Tuning knobs — ubah di sini buat rasain beda feel-nya
+    private let snakePauseDuration: CGFloat = 1.0      // durasi "mikir" sebelum mulai muter (detik)
+    private let snakeWindupDuration: CGFloat = 0.8     // durasi ramp-up sebelum full strike (detik)
+    private let snakeApproachTurnRateFar: CGFloat = 0.045
+    private let snakeApproachTurnRateNear: CGFloat = 0.025
+    private let snakeStrikeTurnRate: CGFloat = 0.025
+    private let snakeStrikeSpeedMult: CGFloat = 0.25
+    private let snakeWindupStartTurnRate: CGFloat = 0.008
+    private let snakeWindupStartSpeedMult: CGFloat = 0.08
+    private let snakeProximityBoostRadius: CGFloat = 300.0
+    private let snakeProximityBoostMult: CGFloat = 1.15
+
     private func updateSnakes(isJumping: Bool, leftOffScreen: CGFloat) {
         let dt: CGFloat = 1.0 / 60.0
-        
+
         for (index, enemy) in spawnerManager.activeSnakes.enumerated().reversed() {
-            
+
             let livingCapyNodes = capySlots.compactMap { $0 }
             guard let chaseTarget = livingCapyNodes.min(by: {
                 hypot($0.position.x - enemy.position.x, $0.position.y - enemy.position.y) <
                 hypot($1.position.x - enemy.position.x, $1.position.y - enemy.position.y)
             }) else { continue }
-            
+
             if enemy.userData == nil { enemy.userData = NSMutableDictionary() }
-            
+
             let realDx = chaseTarget.position.x - enemy.position.x
             let realDy = isJumping ? 0 : (chaseTarget.position.y - enemy.position.y)
-            
-            var canTurnAround = (enemy.userData?["canTurnAround"] as? Bool) ?? false
-            var turnDelayTimer = (enemy.userData?["turnDelayTimer"] as? CGFloat) ?? 2.0
-            
-            let hasPassedPlayer = realDx < 0
-            if hasPassedPlayer && !canTurnAround {
-                turnDelayTimer -= dt
-                enemy.userData?["turnDelayTimer"] = turnDelayTimer
-                if turnDelayTimer <= 0 {
-                    canTurnAround = true
-                    enemy.userData?["canTurnAround"] = true
+            let distanceToTarget = hypot(realDx, realDy)
+            let hasPassedPlayer = realDx > 0
+
+            var state = SnakeState(rawValue: enemy.userData?["snakeState"] as? String ?? "") ?? .approach
+            var stateTimer = (enemy.userData?["stateTimer"] as? CGFloat) ?? 0
+
+            // --- State transitions ---
+            switch state {
+            case .approach:
+                if hasPassedPlayer {
+                    state = .paused
+                    stateTimer = 0
                 }
+            case .paused:
+                stateTimer += dt
+                if stateTimer >= snakePauseDuration {
+                    state = .windup
+                    stateTimer = 0
+                }
+            case .windup:
+                stateTimer += dt
+                if stateTimer >= snakeWindupDuration {
+                    state = .strike
+                    stateTimer = 0
+                }
+            case .strike:
+                break // fase final, nggak balik lagi ke approach walau realDx berubah tanda
             }
-            
+
+            enemy.userData?["snakeState"] = state.rawValue
+            enemy.userData?["stateTimer"] = stateTimer
+
+            // --- Target angle per state ---
             let targetAngle: CGFloat
-            if hasPassedPlayer && !canTurnAround {
-                // Phase 2: Wait timer before turning (swim straight left)
-                targetAngle = CGFloat.pi
-            } else {
-                // Phase 1 (Approaching from right) & Phase 3 (Chasing after U-Turn delay):
-                // Actively chase capybara position!
+            switch state {
+            case .approach:
                 targetAngle = atan2(realDy, realDx)
+            case .paused:
+                targetAngle = CGFloat.pi // berenang lurus ke kiri, belum muter
+            case .windup, .strike:
+                targetAngle = atan2(realDy, realDx) // mulai ngincer lagi
             }
-            
+
             var currentAngle = (enemy.userData?["currentAngle"] as? CGFloat) ?? CGFloat.pi
-            
             var angleDiff = targetAngle - currentAngle
             while angleDiff < -.pi { angleDiff += 2 * .pi }
             while angleDiff > .pi { angleDiff -= 2 * .pi }
-            
-            // Steering rate: Smooth (0.045) when far, limited (0.025) when close so player can dodge up/down/jump!
+
+            // --- Turn rate & move speed per state ---
             let maxTurnRate: CGFloat
-            if realDx > 250 && !canTurnAround {
-                maxTurnRate = 0.045
-            } else {
-                maxTurnRate = 0.025
+            let moveSpeed: CGFloat
+
+            switch state {
+            case .approach:
+                maxTurnRate = distanceToTarget > 250 ? snakeApproachTurnRateFar : snakeApproachTurnRateNear
+                moveSpeed = viewModel.snakeSpeed
+            case .paused:
+                maxTurnRate = snakeApproachTurnRateNear
+                moveSpeed = viewModel.snakeSpeed
+            case .windup:
+                let progress = min(stateTimer / snakeWindupDuration, 1.0)
+                maxTurnRate = snakeWindupStartTurnRate + (snakeStrikeTurnRate - snakeWindupStartTurnRate) * progress
+                moveSpeed = viewModel.snakeSpeed * (snakeWindupStartSpeedMult + (snakeStrikeSpeedMult - snakeWindupStartSpeedMult) * progress)
+            case .strike:
+                maxTurnRate = snakeStrikeTurnRate
+                let proximityBoost = distanceToTarget < snakeProximityBoostRadius ? snakeProximityBoostMult : 1.0
+                moveSpeed = viewModel.snakeSpeed * snakeStrikeSpeedMult * proximityBoost
             }
-            
+
             let turn = max(-maxTurnRate, min(maxTurnRate, angleDiff))
-            
             currentAngle += turn
             while currentAngle < -.pi { currentAngle += 2 * .pi }
             while currentAngle > .pi { currentAngle -= 2 * .pi }
-            
+
             enemy.userData?["currentAngle"] = currentAngle
-            
-            // Consistent pursuit speed both before and after U-turn
-            let moveSpeed = viewModel.snakeSpeed
-            
+
             enemy.position.x += cos(currentAngle) * moveSpeed
             enemy.position.y += sin(currentAngle) * moveSpeed
-            
+
             // Enforce strict River Y boundaries so snakes stay inside river
             let minRiverY = -size.height / 2 + 170.0
             let maxRiverY = -40.0
-            
+
             if enemy.position.y > maxRiverY {
                 enemy.position.y = maxRiverY
                 if sin(currentAngle) > 0 {
@@ -723,7 +826,7 @@ class GameScene: SKScene {
                     enemy.userData?["currentAngle"] = currentAngle
                 }
             }
-            
+
             // Sprite orientation: strictly flat horizontal (zRotation = 0), flip xScale based on direction
             let originalEnemyScale = abs(enemy.xScale)
             if cos(currentAngle) < 0 {
@@ -733,32 +836,33 @@ class GameScene: SKScene {
                 enemy.xScale = -originalEnemyScale
                 enemy.zRotation = 0
             }
-            
+
             var snakeHit = false
-            let hitRadius: CGFloat = 26.0
-            
+            // Hitbox ular diperbesar agar tidak mudah miss/nembus saat kecepatan tinggi
+            let hitRadius: CGFloat = 45.0
+
             for i in 0..<3 {
                 if let capy = capySlots[i] {
                     let dxHit = capy.position.x - enemy.position.x
                     let dyHit = capy.position.y - enemy.position.y
-                    
+
                     if hypot(dxHit, dyHit) < hitRadius && !isJumping {
                         capySlots[i] = nil
                         capy.name = "dying_capy"
                         capy.removeAllActions()
-                        
+
                         run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
-                        
+
                         let knockbackX = (dxHit < 0) ? -200.0 : 200.0
                         let knockback = SKAction.moveBy(x: knockbackX, y: 150, duration: 0.4)
                         knockback.timingMode = .easeOut
                         let fadeOut = SKAction.fadeOut(withDuration: 0.4)
-                        
+
                         capy.run(SKAction.sequence([
                             SKAction.group([knockback, fadeOut]),
                             SKAction.removeFromParent()
                         ]))
-                        
+
                         enemy.removeFromParent()
                         spawnerManager.activeSnakes.remove(at: index)
                         snakeHit = true
@@ -766,9 +870,9 @@ class GameScene: SKScene {
                     }
                 }
             }
-            
+
             if snakeHit { continue }
-            
+
             if enemy.position.x < leftOffScreen {
                 enemy.removeFromParent()
                 spawnerManager.activeSnakes.remove(at: index)
@@ -785,10 +889,11 @@ class GameScene: SKScene {
             
             var hit = false
             for (snakeIndex, enemy) in spawnerManager.activeSnakes.enumerated().reversed() {
-                let dxHit = projectile.position.x - enemy.position.x
-                let dyHit = projectile.position.y - enemy.position.y
+                let dxHit = abs(projectile.position.x - enemy.position.x)
+                let dyHit = abs(projectile.position.y - enemy.position.y)
                 
-                if hypot(dxHit, dyHit) < 60.0 {
+                // Gunakan bounding box yang lebih lebar agar tidak "nembus" visual ular
+                if dxHit < 80.0 && dyHit < 100.0 {
                     hit = true
                     
                     let knockbackX = (dxHit < 0) ? -200.0 : 200.0
@@ -804,6 +909,25 @@ class GameScene: SKScene {
                     
                     spawnerManager.activeSnakes.remove(at: snakeIndex)
                     break
+                }
+            }
+            
+            if !hit {
+                for croc in spawnerManager.activeCrocodiles {
+                    let dxHit = projectile.position.x - croc.position.x
+                    let dyHit = projectile.position.y - croc.position.y
+                    
+                    if hypot(dxHit, dyHit) < 80.0 {
+                        hit = true
+                        let mouthOpenTexture = SKTexture(imageNamed: "crocodile/crocodile_2")
+                        let mouthClosedTexture = SKTexture(imageNamed: "crocodile/crocodile_1")
+                        croc.texture = mouthOpenTexture
+                        croc.run(SKAction.sequence([
+                            SKAction.wait(forDuration: 0.25),
+                            SKAction.run { croc.texture = mouthClosedTexture }
+                        ]))
+                        break
+                    }
                 }
             }
             

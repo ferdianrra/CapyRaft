@@ -12,7 +12,8 @@ final class GameViewModel {
     
     // MARK: - Computed Properties
     var difficultyMultiplier: Double {
-        return 1.0 + (Double(score) / 200.0)
+        // Perlambat laju kenaikan difficulty agar tidak langsung "ngebut" di awal
+        return 1.0 + (Double(score) / 1000.0)
     }
     
     var riverSpeed: CGFloat {
@@ -46,9 +47,12 @@ final class GameViewModel {
     func updateScore(deltaTime: TimeInterval, onScoreChange: (Int) -> Void) {
         guard !isGameOverTriggered else { return }
         
-        scoreTimer += deltaTime
-        if scoreTimer >= 1.0 {
-            score += 10
+        // Kecepatan timer bergantung pada seberapa cepat sungai mengalir (difficultyMultiplier)
+        scoreTimer += deltaTime * difficultyMultiplier
+        
+        // Skor bertambah 1 setiap 0.1 detik (base rate = 10 skor / detik)
+        if scoreTimer >= 0.1 {
+            score += 1
             onScoreChange(score)
             scoreTimer = 0
         }

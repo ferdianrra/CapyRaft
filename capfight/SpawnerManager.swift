@@ -8,10 +8,12 @@ final class SpawnerManager {
     private(set) var snakeTemplate: SKSpriteNode?
     private(set) var rockTemplate: SKSpriteNode?
     private(set) var capyHelpTemplate: SKSpriteNode?
+    private(set) var crocodileTemplate: SKSpriteNode?
     
     var activeSnakes: [SKSpriteNode] = []
     var activeRocks: [SKSpriteNode] = []
     var activeCapyHelps: [SKSpriteNode] = []
+    var activeCrocodiles: [SKSpriteNode] = []
     
     private(set) var snakeAnimation: SKAction!
     
@@ -49,6 +51,12 @@ final class SpawnerManager {
             capyHelpTemplate?.removeFromParent()
             startCapyHelpSpawner(in: scene)
         }
+        
+        if let crocNode = scene.childNode(withName: "//crocodile") as? SKSpriteNode {
+            crocodileTemplate = crocNode
+            crocodileTemplate?.removeFromParent()
+            startCrocodileSpawner(in: scene)
+        }
     }
     
     // MARK: - Spawners
@@ -70,6 +78,27 @@ final class SpawnerManager {
         newSnake.run(snakeAnimation)
         scene.addChild(newSnake)
         activeSnakes.append(newSnake)
+    }
+    
+    private func startCrocodileSpawner(in scene: SKScene) {
+        let waitAction = SKAction.wait(forDuration: 6.0, withRange: 2.0)
+        let spawnAction = SKAction.run { [weak self, weak scene] in
+            guard let scene = scene else { return }
+            self?.spawnSingleCrocodile(in: scene)
+        }
+        scene.run(SKAction.repeatForever(SKAction.sequence([waitAction, spawnAction])))
+    }
+    
+    private func spawnSingleCrocodile(in scene: SKScene) {
+        guard let template = crocodileTemplate, let newCroc = template.copy() as? SKSpriteNode else { return }
+        newCroc.isHidden = false
+        newCroc.zPosition = 8
+        newCroc.texture = SKTexture(imageNamed: "crocodile/crocodile_1")
+        let minY = -scene.size.height / 2 + 180
+        let maxY = -40.0
+        newCroc.position = CGPoint(x: scene.size.width / 2 + 200, y: CGFloat.random(in: minY...maxY))
+        scene.addChild(newCroc)
+        activeCrocodiles.append(newCroc)
     }
     
     private func startRockSpawner(in scene: SKScene, getScore: @escaping () -> Int) {
@@ -164,6 +193,14 @@ final class SpawnerManager {
     
     // MARK: - Off-Screen Cleanup Update
     func updateSpawns(leftOffScreen: CGFloat, obstacleSpeed: CGFloat) {
+        for (index, croc) in activeCrocodiles.enumerated().reversed() {
+            croc.position.x -= obstacleSpeed
+            if croc.position.x < leftOffScreen {
+                croc.removeFromParent()
+                activeCrocodiles.remove(at: index)
+            }
+        }
+        
         for (index, rock) in activeRocks.enumerated().reversed() {
             rock.position.x -= obstacleSpeed
             if rock.position.x < leftOffScreen {
@@ -185,8 +222,10 @@ final class SpawnerManager {
         activeSnakes.forEach { $0.removeFromParent() }
         activeRocks.forEach { $0.removeFromParent() }
         activeCapyHelps.forEach { $0.removeFromParent() }
+        activeCrocodiles.forEach { $0.removeFromParent() }
         activeSnakes.removeAll()
         activeRocks.removeAll()
         activeCapyHelps.removeAll()
+        activeCrocodiles.removeAll()
     }
 }
