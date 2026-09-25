@@ -83,11 +83,11 @@ class MainMenuScene: SKScene {
             
             stopBackgroundMusic()
             
-            if let gameScene = SKScene(fileNamed: "GameScene") {
-                gameScene.scaleMode = .aspectFill
-                let transition = SKTransition.fade(withDuration: 0.5)
-                self.view?.presentScene(gameScene, transition: transition)
-            }
+            let storyScene = StoryScene(size: size)
+            storyScene.anchorPoint = anchorPoint
+            storyScene.scaleMode = scaleMode
+            let transition = SKTransition.fade(withDuration: 0.5)
+            self.view?.presentScene(storyScene, transition: transition)
         }
     }
 
