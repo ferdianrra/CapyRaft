@@ -4,8 +4,10 @@ class MainMenuScene: SKScene {
     
     var bestScoreLabel: SKLabelNode?
     private var bgMusicNode: SKAudioNode?
+    private var isTransitioning = false
     
     override func didMove(to view: SKView) {
+        isTransitioning = false
         bestScoreLabel = self.childNode(withName: "//bestScoreLabel") as? SKLabelNode
         
         let highscore = UserDefaults.standard.integer(forKey: "BestScore")
@@ -33,20 +35,16 @@ class MainMenuScene: SKScene {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            let location = touch.location(in: self)
-            let touchedNode = self.atPoint(location)
-            
-            if touchedNode.name == "playButton" {
-                bgMusicNode?.run(SKAction.stop())
-                bgMusicNode?.removeFromParent()
-                
-                if let gameScene = SKScene(fileNamed: "GameScene") {
-                    gameScene.scaleMode = .aspectFill
-                    let transition = SKTransition.fade(withDuration: 0.5)
-                    self.view?.presentScene(gameScene, transition: transition)
-                }
-            }
+        guard !isTransitioning else { return }
+        isTransitioning = true
+        
+        bgMusicNode?.run(SKAction.stop())
+        bgMusicNode?.removeFromParent()
+        
+        if let gameScene = SKScene(fileNamed: "GameScene") {
+            gameScene.scaleMode = .aspectFill
+            let transition = SKTransition.fade(withDuration: 0.5)
+            self.view?.presentScene(gameScene, transition: transition)
         }
     }
 }

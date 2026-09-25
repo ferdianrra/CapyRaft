@@ -38,6 +38,10 @@ class GameScene: SKScene {
     
     var throwButton: SKNode!
     var jumpButton: SKNode!
+    var pauseButtonNode: SKNode?
+    var pauseOverlayContainer: SKNode?
+    var isGamePaused: Bool = false
+    
     var throwCooldownRing: SKShapeNode?
     var isThrowOnCooldown: Bool = false
     let throwCooldownDuration: TimeInterval = 2.0
@@ -52,6 +56,7 @@ class GameScene: SKScene {
         self.view?.isMultipleTouchEnabled = true
         viewModel.reset()
         
+        isGamePaused = false
         isThrowOnCooldown = false
         throwButton?.alpha = 0.7
         throwCooldownRing?.path = nil
@@ -73,6 +78,7 @@ class GameScene: SKScene {
         })
         
         setupButtons()
+        setupPauseOverlay()
     }
     
     private func setupBackgroundMusic() {
@@ -192,6 +198,11 @@ class GameScene: SKScene {
     private func setupButtons() {
         let buttonRadius: CGFloat = 95.0
         
+        if let existingPause = self.childNode(withName: "//pauseButton") {
+            existingPause.zPosition = 95
+            pauseButtonNode = existingPause
+        }
+        
         if let existingThrow = self.childNode(withName: "//throwButton") {
             existingThrow.setScale(2.5)
             existingThrow.position = CGPoint(x: size.width / 2 - 180, y: -size.height / 2 + 180)
@@ -234,10 +245,115 @@ class GameScene: SKScene {
         }
     }
     
+    // MARK: - Pause Overlay & Logic
+    private func setupPauseOverlay() {
+        let container = SKNode()
+        container.zPosition = 1000
+        container.isHidden = true
+        
+        // Dark semi-transparent dimming background
+        let dimBg = SKShapeNode(rectOf: CGSize(width: 5000, height: 5000))
+        dimBg.fillColor = SKColor.black.withAlphaComponent(0.5)
+        dimBg.strokeColor = .clear
+        dimBg.zPosition = 0
+        container.addChild(dimBg)
+        
+        if let overlayScene = SKScene(fileNamed: "PauseOverlay") {
+            let children = overlayScene.children
+            for child in children {
+                child.removeFromParent()
+                child.zPosition += 1
+                container.addChild(child)
+            }
+        }
+        
+        container.position = .zero
+        addChild(container)
+        pauseOverlayContainer = container
+    }
+    
+    func pauseGame() {
+        guard !viewModel.isGameOverTriggered && !isGamePaused else { return }
+        isGamePaused = true
+        pauseOverlayContainer?.isHidden = false
+        joystick.resetVelocity()
+        self.speed = 0.0
+    }
+    
+    func resumeGame() {
+        guard isGamePaused else { return }
+        isGamePaused = false
+        pauseOverlayContainer?.isHidden = true
+        self.speed = 1.0
+    }
+    
+    func restartGame() {
+        self.speed = 1.0
+        bgMusicNode?.run(SKAction.stop())
+        bgMusicNode?.removeFromParent()
+        
+        if let newScene = SKScene(fileNamed: "GameScene") {
+            newScene.scaleMode = .aspectFill
+            let transition = SKTransition.fade(withDuration: 0.5)
+            self.view?.presentScene(newScene, transition: transition)
+        }
+    }
+    
+    func goToHome() {
+        self.speed = 1.0
+        bgMusicNode?.run(SKAction.stop())
+        bgMusicNode?.removeFromParent()
+        
+        if let homeScene = SKScene(fileNamed: "MainMenuScene") {
+            homeScene.scaleMode = .aspectFill
+            let transition = SKTransition.fade(withDuration: 0.5)
+            self.view?.presentScene(homeScene, transition: transition)
+        }
+    }
+    
+    private func isNodeOrAncestorNamed(_ node: SKNode, name: String) -> Bool {
+        var current: SKNode? = node
+        while let n = current {
+            if n.name == name { return true }
+            current = n.parent
+        }
+        return false
+    }
+    
     // MARK: - Touch Input Handlers
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
+            
+            // Check Overlay Touch when Paused
+            if isGamePaused {
+                if let container = pauseOverlayContainer {
+                    let overlayLocation = touch.location(in: container)
+                    let touchedNodes = container.nodes(at: overlayLocation)
+                    for node in touchedNodes {
+                        if isNodeOrAncestorNamed(node, name: "resumeButton") {
+                            resumeGame()
+                            return
+                        } else if isNodeOrAncestorNamed(node, name: "restartButton") {
+                            restartGame()
+                            return
+                        } else if isNodeOrAncestorNamed(node, name: "homeButton") {
+                            goToHome()
+                            return
+                        }
+                    }
+                }
+                return
+            }
+            
+            // Check Pause Button Touch
+            if let pauseBtn = pauseButtonNode {
+                if pauseBtn.contains(location) || self.nodes(at: location).contains(where: { isNodeOrAncestorNamed($0, name: "pauseButton") }) {
+                    pauseGame()
+                    return
+                }
+            }
+            
             if joystick.handleTouchBegan(touch, location: location) {
                 continue
             }
@@ -247,6 +363,7 @@ class GameScene: SKScene {
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if isGamePaused { return }
         for touch in touches {
             let location = touch.location(in: self)
             joystick.handleTouchMoved(touch, location: location)
@@ -254,6 +371,7 @@ class GameScene: SKScene {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if isGamePaused { return }
         for touch in touches {
             joystick.handleTouchEnded(touch)
         }
@@ -351,6 +469,11 @@ class GameScene: SKScene {
     
     // MARK: - Main Game Loop
     override func update(_ currentTime: TimeInterval) {
+        if isGamePaused {
+            joystick.resetVelocity()
+            return
+        }
+        
         if viewModel.isGameOverTriggered {
             joystick.resetVelocity()
         } else {
