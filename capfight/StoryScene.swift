@@ -3,7 +3,7 @@ import SpriteKit
 final class StoryScene: SKScene {
     private let shallowRiverNode = SKSpriteNode(imageNamed: "story/sungai-dangkal")
     private let fullRiverNode = SKSpriteNode(imageNamed: "story/sungai-penuh")
-    private let incomingWaterNode = SKSpriteNode(imageNamed: "story/air-sungai")
+    private let incomingWaterNode = SKSpriteNode(imageNamed: "story/ombak/IMG_0080")
     private let fullRiverCropNode = SKCropNode()
     private let riverRevealMaskNode = SKSpriteNode(color: .white, size: .zero)
     private let rockOverlayNode = SKSpriteNode(imageNamed: "story/batu")
@@ -44,9 +44,10 @@ final class StoryScene: SKScene {
         fullRiverCropNode.maskNode = riverRevealMaskNode
         addChild(fullRiverCropNode)
 
-        configureRiverLayer(incomingWaterNode, zPosition: 11)
+        configureWaveLayer(incomingWaterNode, zPosition: 11)
         incomingWaterNode.position.x = frame.minX - incomingWaterNode.size.width / 2
         addChild(incomingWaterNode)
+        startWaveAnimation()
 
         configureRiverLayer(rockOverlayNode, zPosition: 12)
         addChild(rockOverlayNode)
@@ -56,6 +57,22 @@ final class StoryScene: SKScene {
 
         addCapybaras()
         configureLog()
+    }
+
+    private func startWaveAnimation() {
+        let waveFrames = [
+            SKTexture(imageNamed: "story/ombak/IMG_0080"),
+            SKTexture(imageNamed: "story/ombak/IMG_0081"),
+            SKTexture(imageNamed: "story/ombak/IMG_0083"),
+            SKTexture(imageNamed: "story/ombak/IMG_0081")
+        ]
+        let animation = SKAction.animate(
+            with: waveFrames,
+            timePerFrame: 0.14,
+            resize: false,
+            restore: false
+        )
+        incomingWaterNode.run(.repeatForever(animation), withKey: "waveAnimation")
     }
 
     private func addParallaxBackground() {
@@ -110,6 +127,20 @@ final class StoryScene: SKScene {
 
         node.size = gameplayRiverSize
         node.position = gameplayRiverPosition
+        node.zPosition = zPosition
+    }
+
+    private func configureWaveLayer(_ node: SKSpriteNode, zPosition: CGFloat) {
+        let textureSize = node.texture?.size() ?? CGSize(width: 1, height: 1)
+        let targetHeight = gameplayRiverSize == .zero ? size.height : gameplayRiverSize.height
+
+        node.size = CGSize(
+            width: targetHeight * textureSize.width / textureSize.height * 1.085,
+            height: targetHeight
+        )
+        node.position = gameplayRiverSize == .zero
+            ? CGPoint(x: frame.midX, y: frame.midY)
+            : gameplayRiverPosition
         node.zPosition = zPosition
     }
 
@@ -172,21 +203,30 @@ final class StoryScene: SKScene {
         guard capybaraNodes.count == 3 else { return }
 
         let waterDuration: TimeInterval = 1.65
+        let initialLeadingEdgeX = incomingWaterNode.frame.maxX
+        let finalPosition = CGPoint(
+            x: frame.minX + incomingWaterNode.frame.width / 2,
+            y: gameplayRiverPosition.y
+        )
+        let finalLeadingEdgeX = finalPosition.x + incomingWaterNode.frame.width / 2
+        let leadingEdgeTravel = finalLeadingEdgeX - initialLeadingEdgeX
+
         let waterMove = SKAction.move(
-            to: gameplayRiverPosition,
+            to: finalPosition,
             duration: waterDuration
         )
         waterMove.timingMode = .linear
         incomingWaterNode.run(waterMove)
 
-        let revealFullRiver = SKAction.scaleX(to: 1, duration: waterDuration)
+        let revealDuration = waterDuration * min(1, size.width / leadingEdgeTravel)
+        let revealFullRiver = SKAction.scaleX(to: 1, duration: revealDuration)
         revealFullRiver.timingMode = .linear
         riverRevealMaskNode.run(revealFullRiver)
 
         let rightmostCapybaraX = capybaraNodes.map(\.position.x).max() ?? frame.midX
         let contactProgress = max(
             0,
-            min(1, (rightmostCapybaraX - frame.minX) / size.width)
+            min(1, (rightmostCapybaraX - initialLeadingEdgeX) / leadingEdgeTravel)
         )
         let contactDelay = waterDuration * contactProgress
 
@@ -203,6 +243,8 @@ final class StoryScene: SKScene {
         let driftingCapybaras = [capybaraNodes[0], capybaraNodes[2]]
 
         for (index, capybara) in driftingCapybaras.enumerated() {
+            addSpeechText("Help!", above: capybara)
+
             let drift = SKAction.moveTo(
                 x: frame.maxX + capybara.frame.width * CGFloat(index + 1),
                 duration: driftDuration
@@ -226,6 +268,36 @@ final class StoryScene: SKScene {
                 self?.finishRiverTransition()
             }
         ]))
+    }
+
+    private func addSpeechText(
+        _ text: String,
+        above capybara: SKSpriteNode,
+        textColor: UIColor = .black
+    ) {
+        let container = SKNode()
+        container.position = CGPoint(x: 0, y: capybara.size.height / 2 + 20)
+        container.zPosition = 5
+
+        let fontSize = max(28, min(42, size.width * 0.018))
+        let shadow = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        shadow.text = text
+        shadow.fontSize = fontSize
+        shadow.fontColor = .black
+        shadow.horizontalAlignmentMode = .center
+        shadow.verticalAlignmentMode = .bottom
+        shadow.position = CGPoint(x: 2, y: -2)
+        container.addChild(shadow)
+
+        let label = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        label.text = text
+        label.fontSize = fontSize
+        label.fontColor = textColor
+        label.horizontalAlignmentMode = .center
+        label.verticalAlignmentMode = .bottom
+        container.addChild(label)
+
+        capybara.addChild(container)
     }
 
     private func finishRiverTransition() {
@@ -276,7 +348,15 @@ final class StoryScene: SKScene {
         capybara.run(.sequence([
             jumpUp,
             land,
-            .wait(forDuration: 0.55),
+            .run { [weak self, weak capybara] in
+                guard let self, let capybara else { return }
+                self.addSpeechText(
+                    "I’ll save you both!",
+                    above: capybara,
+                    textColor: .black
+                )
+            },
+            .wait(forDuration: 1.4),
             .run { [weak self] in
                 self?.startGame()
             }
