@@ -117,6 +117,15 @@ final class JoystickNode: SKNode {
         resetKnob.timingMode = .easeOut
         knobNode.run(resetKnob)
     }
+    
+    func resetTouch() {
+        isActive = false
+        activeTouch = nil
+        velocity = .zero
+
+        knobNode.removeAllActions()
+        knobNode.position = baseNode.position
+    }
 
     func resetVelocity() {
         velocity = .zero

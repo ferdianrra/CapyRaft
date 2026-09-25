@@ -65,21 +65,29 @@ final class GameViewModel {
         }
     }
     
-    func triggerGameOver(in scene: SKScene) {
+//    func triggerGameOver(in scene: SKScene) {
+//        guard !isGameOverTriggered else { return }
+//        isGameOverTriggered = true
+//        saveHighScoreIfNeeded()
+//        
+//        let waitAndGo = SKAction.sequence([
+//            SKAction.wait(forDuration: 1.0),
+//            SKAction.run {
+//                if let menuScene = SKScene(fileNamed: "MainMenuScene") {
+//                    menuScene.scaleMode = .aspectFill
+//                    let transition = SKTransition.fade(withDuration: 0.8)
+//                    scene.view?.presentScene(menuScene, transition: transition)
+//                }
+//            }
+//        ])
+//        scene.run(waitAndGo)
+//    }
+    
+    func triggerGameOver(in scene: GameScene) {
         guard !isGameOverTriggered else { return }
+
         isGameOverTriggered = true
         saveHighScoreIfNeeded()
-        
-        let waitAndGo = SKAction.sequence([
-            SKAction.wait(forDuration: 1.0),
-            SKAction.run {
-                if let menuScene = SKScene(fileNamed: "MainMenuScene") {
-                    menuScene.scaleMode = .aspectFill
-                    let transition = SKTransition.fade(withDuration: 0.8)
-                    scene.view?.presentScene(menuScene, transition: transition)
-                }
-            }
-        ])
-        scene.run(waitAndGo)
+        scene.showGameOver()
     }
 }

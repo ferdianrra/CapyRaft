@@ -43,12 +43,17 @@ class GameScene: SKScene {
     var jumpButton: SKNode!
     var pauseButtonNode: SKNode?
     var pauseOverlayContainer: SKNode?
+    private var gameOverOverlay: SKNode?
     var isGamePaused: Bool = false
+    private var isCrocodileEating = false
+    private var isResuming = false
+    private var countdownLabel: SKLabelNode?
     
     var throwCooldownRing: SKShapeNode?
     var isThrowOnCooldown: Bool = false
     let throwCooldownDuration: TimeInterval = 1.5
     var scoreLabel: SKLabelNode?
+    private var lifeIcons: [SKSpriteNode] = []
     private var bgMusicNode: SKAudioNode?
     
     let riverTopMargin: CGFloat = 90.0
@@ -68,6 +73,7 @@ class GameScene: SKScene {
         scoreLabel?.text = "Score: 0"
         
         setupWoodAndPlayers()
+        setupLifeHUD()
         setupBackgrounds()
         setupBackgroundMusic()
         
@@ -82,6 +88,34 @@ class GameScene: SKScene {
         
         setupButtons()
         setupPauseOverlay()
+    }
+    
+    private func setupLifeHUD() {
+        lifeIcons.forEach { $0.removeFromParent() }
+        lifeIcons.removeAll()
+
+        for index in 0..<3 {
+            let icon = SKSpriteNode(imageNamed: "capy_head")
+            icon.name = "lifeIcon\(index)"
+            icon.size = CGSize(width: 90, height: 90)
+            icon.position = CGPoint(
+                x: -size.width / 2 + 125 + CGFloat(index) * 105,
+                y: size.height / 2 - 145
+            )
+            icon.zPosition = 500
+            addChild(icon)
+            lifeIcons.append(icon)
+        }
+
+        updateLifeHUD()
+    }
+
+    private func updateLifeHUD() {
+        let livingCount = capySlots.compactMap { $0 }.count
+
+        for (index, icon) in lifeIcons.enumerated() {
+            icon.alpha = index < livingCount ? 1.0 : 0.25
+        }
     }
     
     private func setupBackgroundMusic() {
@@ -145,6 +179,12 @@ class GameScene: SKScene {
     }
 
     private func applyStoryStartingStateIfNeeded() {
+        // Setiap permainan baru, termasuk restart, mulai dengan 1 capybara.
+        for index in capySlots.indices where index != 1 {
+            capySlots[index]?.removeFromParent()
+            capySlots[index] = nil
+        }
+
         guard
             let woodPosition = storyStartingWoodPosition,
             let capybaraPosition = storyStartingCapybaraPosition,
@@ -160,11 +200,6 @@ class GameScene: SKScene {
             x: capybaraPosition.x - woodPosition.x,
             y: capybaraPosition.y - woodPosition.y
         )
-
-        for index in capySlots.indices where index != 1 {
-            capySlots[index]?.removeFromParent()
-            capySlots[index] = nil
-        }
     }
     
     private func setupBackgrounds() {
@@ -292,19 +327,114 @@ class GameScene: SKScene {
         pauseOverlayContainer = container
     }
     
+    func showGameOver() {
+        guard gameOverOverlay == nil else { return }
+
+        let overlay = SKNode()
+        overlay.zPosition = 2000
+
+        let dimBackground = SKShapeNode(rectOf: size)
+        dimBackground.fillColor = .black.withAlphaComponent(0.6)
+        dimBackground.strokeColor = .clear
+        overlay.addChild(dimBackground)
+        
+        let content = SKNode()
+        content.position = .zero
+        content.zPosition = 1
+        overlay.addChild(content)
+        
+        let panel = SKSpriteNode(imageNamed: "pause_background")
+        panel.size = CGSize(width: 1000, height: 850)
+        content.addChild(panel)
+
+        func addLabel(
+            _ text: String,
+            y: CGFloat,
+            fontSize: CGFloat,
+            color: SKColor = SKColor(red: 0.22, green: 0.16, blue: 0.10, alpha: 1)
+        ) {
+            let label = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+            label.text = text
+            label.fontSize = fontSize
+            label.fontColor = color
+            label.verticalAlignmentMode = .center
+            label.position = CGPoint(x: 0, y: y)
+            label.zPosition = 2
+            content.addChild(label)
+        }
+
+        let finalScore = viewModel.score
+        let highScore = UserDefaults.standard.integer(forKey: "BestScore")
+        
+        addLabel("GAME OVER", y: 260, fontSize: 62)
+        addLabel("FINAL SCORE", y: 120, fontSize: 32)
+        addLabel("\(finalScore)", y: 35, fontSize: 96)
+        addLabel("HIGH SCORE: \(highScore)", y: -70, fontSize: 32)
+
+        let restartButton = SKSpriteNode(imageNamed: "button/restart_button")
+        restartButton.name = "gameOverRestartButton"
+        restartButton.size = CGSize(width: 390, height: 120)
+        restartButton.position = CGPoint(x: 0, y: -190)
+        restartButton.zPosition = 3
+        content.addChild(restartButton)
+
+        let homeButton = SKSpriteNode(imageNamed: "button/home_button")
+        homeButton.name = "gameOverHomeButton"
+        homeButton.size = CGSize(width: 330, height: 110)
+        homeButton.position = CGPoint(x: 0, y: -325)
+        homeButton.zPosition = 3
+        content.addChild(homeButton)
+
+        addChild(overlay)
+        gameOverOverlay = overlay
+        joystick.resetVelocity()
+        self.speed = 0
+    }
+    
     func pauseGame() {
         guard !viewModel.isGameOverTriggered && !isGamePaused else { return }
         isGamePaused = true
         pauseOverlayContainer?.isHidden = false
-        joystick.resetVelocity()
+        joystick.resetTouch()
         self.speed = 0.0
     }
     
     func resumeGame() {
-        guard isGamePaused else { return }
-        isGamePaused = false
+        guard isGamePaused, !isResuming else { return }
+
+        isResuming = true
         pauseOverlayContainer?.isHidden = true
-        self.speed = 1.0
+        joystick.resetTouch()
+
+        let label = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        label.fontSize = 150
+        label.fontColor = .white
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        label.position = .zero
+        label.zPosition = 3000
+        label.text = "3"
+        addChild(label)
+        countdownLabel = label
+
+        // DispatchQueue dipakai karena SKAction ikut berhenti saat scene.speed = 0.
+        for (step, text) in ["2", "1", "GO!"].enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(step + 1)) { [weak self] in
+                guard let self, self.isResuming, self.view?.scene === self else { return }
+                label.text = text
+                label.fontSize = text == "GO!" ? 110 : 150
+            }
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self, self.isResuming, self.view?.scene === self else { return }
+
+            label.removeFromParent()
+            self.countdownLabel = nil
+            self.isResuming = false
+            self.isGamePaused = false
+            self.speed = 1.0
+        }
     }
     
     func restartGame() {
@@ -344,6 +474,21 @@ class GameScene: SKScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
             let location = touch.location(in: self)
+            
+            if viewModel.isGameOverTriggered {
+                for node in nodes(at: location) {
+                    if isNodeOrAncestorNamed(node, name: "gameOverRestartButton") {
+                        restartGame()
+                        return
+                    }
+
+                    if isNodeOrAncestorNamed(node, name: "gameOverHomeButton") {
+                        goToHome()
+                        return
+                    }
+                }
+                return
+            }
             
             // Check Overlay Touch when Paused
             if isGamePaused {
@@ -505,11 +650,13 @@ class GameScene: SKScene {
         let leftOffScreen = -size.width - 1000.0
         
         // KONDISI KALAH 1: Semua capybara mati
-        if !viewModel.isGameOverTriggered {
-            let livingCapys = capySlots.compactMap { $0 }
-            let dyingCapys = self.children.filter { $0.name == "dying_capy" }
-            if livingCapys.isEmpty && dyingCapys.isEmpty {
+        if !viewModel.isGameOverTriggered && !isCrocodileEating {
+            let hasLivingCapy = capySlots.contains { $0 != nil }
+            let hasDyingCapy = children.contains { $0.name == "dying_capy" }
+
+            if !hasLivingCapy && !hasDyingCapy {
                 viewModel.triggerGameOver(in: self)
+                return
             }
         }
         
@@ -625,7 +772,7 @@ class GameScene: SKScene {
         }
         
         // Rescue Item Collision
-        if !isJumping {
+        if !isJumping, !viewModel.isGameOverTriggered, !isCrocodileEating, capySlots.contains(where: { $0 != nil }) {
             for (index, help) in spawnerManager.activeCapyHelps.enumerated().reversed() {
                 if hypot(w.position.x - help.position.x, w.position.y - help.position.y) < 120.0 {
                     help.removeFromParent()
@@ -639,6 +786,7 @@ class GameScene: SKScene {
                                 newChar.zPosition = capyZPosition
                                 self.addChild(newChar)
                                 capySlots[i] = newChar
+                                updateLifeHUD()
                                 startCapyIdleAnimation(for: newChar)
                             }
                             break
@@ -683,8 +831,9 @@ class GameScene: SKScene {
     }
     
     private func triggerCrocodileEat(croc: SKSpriteNode) {
-        guard !viewModel.isGameOverTriggered else { return }
-        
+        guard !viewModel.isGameOverTriggered && !isCrocodileEating else { return }
+        isCrocodileEating = true
+
         run(SKAction.playSoundFileNamed("fall_capy.mp3", waitForCompletion: false))
         
         let mouthOpenTexture = SKTexture(imageNamed: "crocodile/crocodile_2")
@@ -699,6 +848,7 @@ class GameScene: SKScene {
             capySlots[i]?.isHidden = true
             capySlots[i] = nil
         }
+        updateLifeHUD()
         
         // Sequence: Hold mouth open for 0.4s (eating), close mouth (mingkep), then show Game Over screen
         let waitEating = SKAction.wait(forDuration: 0.4)
@@ -868,6 +1018,7 @@ class GameScene: SKScene {
 
                     if hypot(dxHit, dyHit) < hitRadius && !isJumping {
                         capySlots[i] = nil
+                        updateLifeHUD()
                         capy.name = "dying_capy"
                         capy.removeAllActions()
 
