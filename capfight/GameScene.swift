@@ -277,7 +277,7 @@ class GameScene: SKScene {
         let throwSprite = SKSpriteNode(imageNamed: "throw_rock_button")
         throwSprite.name = "throwButton"
         throwSprite.size = buttonSize
-        throwSprite.position = CGPoint(x: size.width / 2 - 145, y: -size.height / 2 + 275)
+        throwSprite.position = CGPoint(x: size.width / 2 - 250, y: -size.height / 2 + 340)
         throwSprite.zPosition = 90
         addChild(throwSprite)
         throwButton = throwSprite
@@ -297,7 +297,7 @@ class GameScene: SKScene {
         let jumpSprite = SKSpriteNode(imageNamed: "jump_button")
         jumpSprite.name = "jumpButton"
         jumpSprite.size = buttonSize
-        jumpSprite.position = CGPoint(x: size.width / 2 - 335, y: -size.height / 2 + 135)
+        jumpSprite.position = CGPoint(x: size.width / 2 - 420, y: -size.height / 2 + 200)
         jumpSprite.zPosition = 90
         addChild(jumpSprite)
         jumpButton = jumpSprite
@@ -541,11 +541,9 @@ class GameScene: SKScene {
                 continue
             }
             if let throwNode = throwButton, throwNode.contains(location) { 
-                playButtonSound()
                 performThrow() 
             }
             if let jumpNode = jumpButton, jumpNode.contains(location) { 
-                playButtonSound()
                 performJump() 
             }
         }
@@ -576,6 +574,8 @@ class GameScene: SKScene {
         guard let w = wood else { return }
         let activeCapys = capySlots.compactMap { $0 }
         if activeCapys.isEmpty { return }
+        
+        playButtonSound()
         
         let isFacingRight = w.xScale > 0
         guard let frontCapy = activeCapys.max(by: {
@@ -636,6 +636,8 @@ class GameScene: SKScene {
     
     func performJump() {
         if viewModel.isGameOverTriggered || wood?.action(forKey: "jumping") != nil { return }
+        
+        playButtonSound()
         
         let woodFullTexture = SKTexture(imageNamed: "wood")
         let woodHalfTexture = SKTexture(imageNamed: "half_wood")

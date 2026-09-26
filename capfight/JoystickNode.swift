@@ -48,8 +48,8 @@ final class JoystickNode: SKNode {
             height: baseRadius * 2
         )
         baseNode.position = CGPoint(
-            x: -sceneSize.width / 2 + 230,
-            y: -sceneSize.height / 2 + 230
+            x: -sceneSize.width / 2 + 300,
+            y: -sceneSize.height / 2 + 280
         )
         baseNode.zPosition = 90
         addChild(baseNode)
