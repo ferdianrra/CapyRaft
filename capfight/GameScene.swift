@@ -990,15 +990,17 @@ class GameScene: SKScene {
             case .approach:
                 maxTurnRate = distanceToTarget > 250 ? snakeApproachTurnRateFar : snakeApproachTurnRateNear
                 
-                // Sprint logic: Ular lari cepat (ngejar) kalau masih jauh, lalu melambat saat sudah dekat
+                // Sprint logic: Ular lari cepat (ngejar) secara natural dengan smooth transition
                 let xDist = abs(realDx)
                 let sprintMultiplier: CGFloat
-                if xDist > 400 {
+                if xDist > 450 {
                     sprintMultiplier = 3.5
-                } else if xDist > 200 {
-                    sprintMultiplier = 2.0
-                } else {
+                } else if xDist < 150 {
                     sprintMultiplier = 1.0
+                } else {
+                    // Smooth linear interpolation dari 1.0 ke 3.5
+                    let progress = (xDist - 150) / 300.0
+                    sprintMultiplier = 1.0 + (2.5 * progress)
                 }
                 moveSpeed = viewModel.snakeSpeed * sprintMultiplier
             case .paused:
@@ -1030,16 +1032,9 @@ class GameScene: SKScene {
 
             if enemy.position.y > maxRiverY {
                 enemy.position.y = maxRiverY
-                if sin(currentAngle) > 0 {
-                    currentAngle = (cos(currentAngle) < 0) ? (CGFloat.pi - 0.2) : -0.2
-                    enemy.userData?["currentAngle"] = currentAngle
-                }
+                // Biarkan angle tetap menargetkan capybara agar gerakan sliding-nya mulus, tidak patah-patah
             } else if enemy.position.y < minRiverY {
                 enemy.position.y = minRiverY
-                if sin(currentAngle) < 0 {
-                    currentAngle = (cos(currentAngle) < 0) ? (CGFloat.pi + 0.2) : 0.2
-                    enemy.userData?["currentAngle"] = currentAngle
-                }
             }
 
             // Sprite orientation: strictly flat horizontal (zRotation = 0), flip xScale based on direction

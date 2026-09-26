@@ -352,11 +352,12 @@ final class StoryScene: SKScene {
 
         let jumpUp = SKAction.move(to: jumpPeak, duration: 0.42)
         jumpUp.timingMode = .easeOut
+        let playStartSound = SKAction.playSoundFileNamed("start_capy.mp3", waitForCompletion: false)
         let land = SKAction.move(to: landingPosition, duration: 0.42)
         land.timingMode = .easeIn
 
         capybara.run(.sequence([
-            jumpUp,
+            .group([jumpUp, playStartSound]),
             land,
             .run { [weak self, weak capybara] in
                 guard let self, let capybara else { return }

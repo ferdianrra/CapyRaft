@@ -87,6 +87,7 @@ final class GameViewModel {
         guard !isGameOverTriggered else { return }
 
         isGameOverTriggered = true
+        scene.run(SKAction.playSoundFileNamed("game_over.mp3", waitForCompletion: false))
         saveHighScoreIfNeeded()
         scene.showGameOver()
     }
